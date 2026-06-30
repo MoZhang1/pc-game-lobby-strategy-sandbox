@@ -104,7 +104,7 @@ function AndroidGuideModal({ type, onClose, onTry, onSearch }) {
 
 function AndroidSimulator() {
   const [page, setPage] = useState('recommend');
-  const [visitedTabs, setVisitedTabs] = useState([]);
+  const [secondaryClicks, setSecondaryClicks] = useState(0);
   const [searches, setSearches] = useState(0);
   const [query, setQuery] = useState('');
   const [weakGuide, setWeakGuide] = useState(false);
@@ -123,8 +123,8 @@ function AndroidSimulator() {
     setPage(id);
     if (id !== 'recommend') {
       setWeakGuide(false);
-      setVisitedTabs(current => current.includes(id) ? current : [...current, id]);
-    } else if (visitedTabs.length >= 2 && !weakShown) {
+      setSecondaryClicks(current => current + 1);
+    } else if (secondaryClicks >= 3 && !weakShown) {
       setWeakShown(true);
       setWeakGuide(true);
     }
@@ -158,7 +158,7 @@ function AndroidSimulator() {
     setResultCard(false);
   };
   const reset = () => {
-    setPage('recommend'); setVisitedTabs([]); setSearches(0); setQuery('');
+    setPage('recommend'); setSecondaryClicks(0); setSearches(0); setQuery('');
     setWeakGuide(false); setGuide(null); setResultCard(false); setStarted(false);
     setWeakShown(false); setStrongShown(false);
     setHomeDepth(0); setSecondaryGuide(false); setSecondaryShown(false);
@@ -190,11 +190,11 @@ function AndroidSimulator() {
       </div>
       <aside className="behaviorPanel">
         <header><span>实时行为状态</span><i className={started ? 'done' : ''}>{started ? '已启动游戏' : '尚未启动游戏'}</i></header>
-        <div className="behaviorCount"><span>已浏览二级页签</span><strong>{visitedTabs.length}<small> / 2</small></strong></div>
+        <div className="behaviorCount"><span>二级页签点击</span><strong>{secondaryClicks}<small> / 3</small></strong></div>
         <div className="behaviorCount"><span>无点击搜索</span><strong>{searches}<small> / 3</small></strong></div>
         <div className="behaviorCount"><span>首页浏览深度</span><strong>{homeDepth}<small>%</small></strong></div>
         <section className={secondaryShown ? 'triggered' : ''}><b>场景 0 · 二级页签引导</b><p>在推荐首页向下滑动，浏览深度达到 85%，期间未启动游戏。</p><em>{secondaryShown ? '已触发' : '等待触发'}</em></section>
-        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>浏览至少 2 个不同二级页签后返回推荐首页，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
+        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>二级页签累计点击 3 次后返回推荐首页，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
         <section className={strongShown ? 'triggered' : ''}><b>场景 2 · 替代游戏强引导</b><p>进入搜索页，连续提交搜索 3 次，不点击推荐游戏。</p><em>{strongShown ? '已触发' : '等待触发'}</em></section>
         <section className={resultCard ? 'triggered' : ''}><b>场景 3 · 结果页推荐卡</b><p>提交搜索但未点击游戏时，在结果页强化推荐。</p><em>{resultCard ? '展示中' : '等待触发'}</em></section>
         <footer>频控已模拟：两个首页弱引导各最多一次、不会同时出现；启动游戏后停止触发。</footer>
