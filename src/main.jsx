@@ -104,7 +104,7 @@ function AndroidGuideModal({ type, onClose, onTry, onSearch }) {
 
 function AndroidSimulator() {
   const [page, setPage] = useState('recommend');
-  const [tabClicks, setTabClicks] = useState(0);
+  const [visitedTabs, setVisitedTabs] = useState([]);
   const [searches, setSearches] = useState(0);
   const [query, setQuery] = useState('');
   const [weakGuide, setWeakGuide] = useState(false);
@@ -120,10 +120,11 @@ function AndroidSimulator() {
   const selectTab = id => {
     setSecondaryGuide(false);
     if (started) return setPage(id);
-    const next = tabClicks + 1;
     setPage(id);
-    setTabClicks(next);
-    if (next >= 3 && !weakShown) {
+    if (id !== 'recommend') {
+      setWeakGuide(false);
+      setVisitedTabs(current => current.includes(id) ? current : [...current, id]);
+    } else if (visitedTabs.length >= 2 && !weakShown) {
       setWeakShown(true);
       setWeakGuide(true);
     }
@@ -157,7 +158,7 @@ function AndroidSimulator() {
     setResultCard(false);
   };
   const reset = () => {
-    setPage('recommend'); setTabClicks(0); setSearches(0); setQuery('');
+    setPage('recommend'); setVisitedTabs([]); setSearches(0); setQuery('');
     setWeakGuide(false); setGuide(null); setResultCard(false); setStarted(false);
     setWeakShown(false); setStrongShown(false);
     setHomeDepth(0); setSecondaryGuide(false); setSecondaryShown(false);
@@ -181,7 +182,7 @@ function AndroidSimulator() {
             {resultCard && <div className="resultRecommend"><small>没找到？你可能会喜欢</small><div><span className="miniGuideIcon">掼</span><b>本地热门 · 掼蛋</b><button onClick={launch}>试玩</button></div></div>}
           </>}
           {weakGuide && <button className="searchBubble" onClick={openSearch}>找不到合适的游戏吗？<b>可以来搜索试试</b><i /></button>}
-          {secondaryGuide && <button className="secondaryTabBubble" onClick={() => {setPage('poker');setSecondaryGuide(false)}}>更多游戏可以点击这里探索<i /></button>}
+          {secondaryGuide && <button className="secondaryTabBubble" onClick={() => selectTab('poker')}>更多游戏可以点击这里探索<i /></button>}
           {page === 'recommend' && !secondaryShown && <div className="homeDepth"><span style={{height:`${homeDepth}%`}}/><small>{homeDepth < 85 ? '向下滑动浏览首页' : '已浏览到底'}</small></div>}
           {started && <div className="startedToast">已启动「掼蛋」，本会话停止触发引导</div>}
           <AndroidGuideModal type={guide} onClose={() => setGuide(null)} onTry={launch} onSearch={() => {setGuide(null);setPage('search')}} />
@@ -189,14 +190,14 @@ function AndroidSimulator() {
       </div>
       <aside className="behaviorPanel">
         <header><span>实时行为状态</span><i className={started ? 'done' : ''}>{started ? '已启动游戏' : '尚未启动游戏'}</i></header>
-        <div className="behaviorCount"><span>首页页签点击</span><strong>{tabClicks}<small> / 3</small></strong></div>
+        <div className="behaviorCount"><span>已浏览二级页签</span><strong>{visitedTabs.length}<small> / 2</small></strong></div>
         <div className="behaviorCount"><span>无点击搜索</span><strong>{searches}<small> / 3</small></strong></div>
         <div className="behaviorCount"><span>首页浏览深度</span><strong>{homeDepth}<small>%</small></strong></div>
         <section className={secondaryShown ? 'triggered' : ''}><b>场景 0 · 二级页签引导</b><p>在推荐首页向下滑动，浏览深度达到 85%，期间未启动游戏。</p><em>{secondaryShown ? '已触发' : '等待触发'}</em></section>
-        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>连续点击任意首页页签 3 次，期间不启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
+        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>浏览至少 2 个不同二级页签后返回推荐首页，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
         <section className={strongShown ? 'triggered' : ''}><b>场景 2 · 替代游戏强引导</b><p>进入搜索页，连续提交搜索 3 次，不点击推荐游戏。</p><em>{strongShown ? '已触发' : '等待触发'}</em></section>
         <section className={resultCard ? 'triggered' : ''}><b>场景 3 · 结果页推荐卡</b><p>提交搜索但未点击游戏时，在结果页强化推荐。</p><em>{resultCard ? '展示中' : '等待触发'}</em></section>
-        <footer>频控已模拟：弱/强引导各最多一次；启动游戏后停止触发。</footer>
+        <footer>频控已模拟：两个首页弱引导各最多一次、不会同时出现；启动游戏后停止触发。</footer>
       </aside>
     </div>
   </div>;
