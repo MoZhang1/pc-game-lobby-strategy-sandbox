@@ -122,11 +122,12 @@ function AndroidSimulator() {
     if (started) return setPage(id);
     setPage(id);
     if (id !== 'recommend') {
-      setWeakGuide(false);
-      setSecondaryClicks(current => current + 1);
-    } else if (secondaryClicks >= 3 && !weakShown) {
-      setWeakShown(true);
-      setWeakGuide(true);
+      const next = secondaryClicks + 1;
+      setSecondaryClicks(next);
+      if (next >= 3 && !weakShown) {
+        setWeakShown(true);
+        setWeakGuide(true);
+      }
     }
   };
   const browseHome = event => {
@@ -194,10 +195,10 @@ function AndroidSimulator() {
         <div className="behaviorCount"><span>无点击搜索</span><strong>{searches}<small> / 3</small></strong></div>
         <div className="behaviorCount"><span>首页浏览深度</span><strong>{homeDepth}<small>%</small></strong></div>
         <section className={secondaryShown ? 'triggered' : ''}><b>场景 0 · 二级页签引导</b><p>在推荐首页向下滑动，浏览深度达到 85%，期间未启动游戏。</p><em>{secondaryShown ? '已触发' : '等待触发'}</em></section>
-        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>二级页签累计点击 3 次后返回推荐首页，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
+        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>二级页签累计点击达到 3 次时立即触发，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
         <section className={strongShown ? 'triggered' : ''}><b>场景 2 · 替代游戏强引导</b><p>进入搜索页，连续提交搜索 3 次，不点击推荐游戏。</p><em>{strongShown ? '已触发' : '等待触发'}</em></section>
         <section className={resultCard ? 'triggered' : ''}><b>场景 3 · 结果页推荐卡</b><p>提交搜索但未点击游戏时，在结果页强化推荐。</p><em>{resultCard ? '展示中' : '等待触发'}</em></section>
-        <footer>频控已模拟：两个首页弱引导各最多一次、不会同时出现；启动游戏后停止触发。</footer>
+        <footer>频控已模拟：两类弱引导各最多一次、不会同时出现；启动游戏后停止触发。</footer>
       </aside>
     </div>
   </div>;
