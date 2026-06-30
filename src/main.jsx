@@ -113,8 +113,12 @@ function AndroidSimulator() {
   const [started, setStarted] = useState(false);
   const [weakShown, setWeakShown] = useState(false);
   const [strongShown, setStrongShown] = useState(false);
+  const [homeDepth, setHomeDepth] = useState(0);
+  const [secondaryGuide, setSecondaryGuide] = useState(false);
+  const [secondaryShown, setSecondaryShown] = useState(false);
 
   const selectTab = id => {
+    setSecondaryGuide(false);
     if (started) return setPage(id);
     const next = tabClicks + 1;
     setPage(id);
@@ -122,6 +126,15 @@ function AndroidSimulator() {
     if (next >= 3 && !weakShown) {
       setWeakShown(true);
       setWeakGuide(true);
+    }
+  };
+  const browseHome = event => {
+    if (page !== 'recommend' || started || secondaryShown || event.deltaY <= 0) return;
+    const next = Math.min(100, homeDepth + 34);
+    setHomeDepth(next);
+    if (next >= 85) {
+      setSecondaryShown(true);
+      setSecondaryGuide(true);
     }
   };
   const openSearch = () => { setPage('search'); setWeakGuide(false); };
@@ -140,19 +153,21 @@ function AndroidSimulator() {
     setStarted(true);
     setGuide(null);
     setWeakGuide(false);
+    setSecondaryGuide(false);
     setResultCard(false);
   };
   const reset = () => {
     setPage('recommend'); setTabClicks(0); setSearches(0); setQuery('');
     setWeakGuide(false); setGuide(null); setResultCard(false); setStarted(false);
     setWeakShown(false); setStrongShown(false);
+    setHomeDepth(0); setSecondaryGuide(false); setSecondaryShown(false);
   };
 
   return <div className="androidPage">
     <div className="androidIntro"><div><b>安卓行为引导模拟</b><span>按真实用户路径操作，满足条件后自动触发对应引导</span></div><button onClick={reset}><RotateCcw />重置行为</button></div>
     <div className="androidWorkspace">
       <div className="phoneShell">
-        <div className="phoneScreen">
+        <div className="phoneScreen" onWheel={browseHome}>
           <img src={`./${page === 'search' ? 'android-search.png' : androidPages[page]}`} alt="安卓竖版同城游界面" />
           {page !== 'search' && <>
             <button className="mobileSearchHotspot" aria-label="进入搜索页" onClick={openSearch} />
@@ -166,6 +181,8 @@ function AndroidSimulator() {
             {resultCard && <div className="resultRecommend"><small>没找到？你可能会喜欢</small><div><span className="miniGuideIcon">掼</span><b>本地热门 · 掼蛋</b><button onClick={launch}>试玩</button></div></div>}
           </>}
           {weakGuide && <button className="searchBubble" onClick={openSearch}>找不到合适的游戏吗？<b>可以来搜索试试</b><i /></button>}
+          {secondaryGuide && <button className="secondaryTabBubble" onClick={() => {setPage('poker');setSecondaryGuide(false)}}>更多游戏可以点击这里探索<i /></button>}
+          {page === 'recommend' && !secondaryShown && <div className="homeDepth"><span style={{height:`${homeDepth}%`}}/><small>{homeDepth < 85 ? '向下滑动浏览首页' : '已浏览到底'}</small></div>}
           {started && <div className="startedToast">已启动「掼蛋」，本会话停止触发引导</div>}
           <AndroidGuideModal type={guide} onClose={() => setGuide(null)} onTry={launch} onSearch={() => {setGuide(null);setPage('search')}} />
         </div>
@@ -174,6 +191,8 @@ function AndroidSimulator() {
         <header><span>实时行为状态</span><i className={started ? 'done' : ''}>{started ? '已启动游戏' : '尚未启动游戏'}</i></header>
         <div className="behaviorCount"><span>首页页签点击</span><strong>{tabClicks}<small> / 3</small></strong></div>
         <div className="behaviorCount"><span>无点击搜索</span><strong>{searches}<small> / 3</small></strong></div>
+        <div className="behaviorCount"><span>首页浏览深度</span><strong>{homeDepth}<small>%</small></strong></div>
+        <section className={secondaryShown ? 'triggered' : ''}><b>场景 0 · 二级页签引导</b><p>在推荐首页向下滑动，浏览深度达到 85%，期间未启动游戏。</p><em>{secondaryShown ? '已触发' : '等待触发'}</em></section>
         <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>连续点击任意首页页签 3 次，期间不启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
         <section className={strongShown ? 'triggered' : ''}><b>场景 2 · 替代游戏强引导</b><p>进入搜索页，连续提交搜索 3 次，不点击推荐游戏。</p><em>{strongShown ? '已触发' : '等待触发'}</em></section>
         <section className={resultCard ? 'triggered' : ''}><b>场景 3 · 结果页推荐卡</b><p>提交搜索但未点击游戏时，在结果页强化推荐。</p><em>{resultCard ? '展示中' : '等待触发'}</em></section>
