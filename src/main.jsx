@@ -1,9 +1,10 @@
 import React,{useMemo,useState} from 'react';
 import{createRoot}from'react-dom/client';
-import{Home,BarChart3,FlaskConical,Library,ShieldCheck,Settings,Save,RotateCcw,GripVertical,X,RefreshCw,Plus,Search,PanelRightOpen,Copy,Play,Pause,Trash2,Database,Download,CheckCircle2}from'lucide-react';
+import{Home,BarChart3,FlaskConical,Library,ShieldCheck,Settings,Save,RotateCcw,GripVertical,X,RefreshCw,Plus,Search,PanelRightOpen,Copy,Play,Pause,Trash2,Database,Download,CheckCircle2,ClipboardList,Monitor,Smartphone}from'lucide-react';
 import'./styles.css';
 import'./modules.css';
 import'./layout.css';
+import'./roadmap.css';
 
 const gameSeed=[
  {id:1,name:'斗地主',type:'扑克',tone:'#e38c28',mark:'斗',monetize:false},
@@ -103,6 +104,36 @@ function RulesPage({rules,setRules,toast}){
 function RuleSwitch({title,desc,on,click}){return <button className="ruleSwitch" onClick={click}><span><b>{title}</b><small>{desc}</small></span><i className={on?'on':''}><em/></i></button>}
 function SettingsPage({prefs,setPrefs,toast}){return <div className="modulePage"><PageHeader title="系统设置" desc="管理数据口径、本地保存和沙盘显示选项。" action={<button className="solidBtn" onClick={()=>{localStorage.setItem('pc-lobby-prefs',JSON.stringify(prefs));toast('系统设置已保存')}}><Save size={15}/>保存设置</button>}/><div className="settingsLayout"><section className="settingsPanel"><h3><Database size={17}/>KPI 数据口径</h3><label>新用户分发率公式<textarea readOnly value="新用户当天进入游戏人数 ÷ 新用户总数 × 100%"/></label><label>老用户二次分发率公式<textarea readOnly value="老用户进入变现游戏人数 ÷ 老用户数 × 100%"/></label><p>点击率、次留、付费率仅用于诊断和排序，不计入 KPI。</p></section><section className="settingsPanel"><h3>沙盘偏好</h3><RuleSwitch title="自动保存草稿" desc="每次调整后保存在本机浏览器" on={prefs.autosave} click={()=>setPrefs({...prefs,autosave:!prefs.autosave})}/><RuleSwitch title="显示区域编号" desc="在预览中显示 A–J 标记" on={prefs.labels} click={()=>setPrefs({...prefs,labels:!prefs.labels})}/><RuleSwitch title="显示变现游戏标记" desc="在游戏图标上显示变现角标" on={prefs.monetizeTag} click={()=>setPrefs({...prefs,monetizeTag:!prefs.monetizeTag})}/></section><section className="settingsPanel"><h3>方案数据</h3><button className="settingAction" onClick={()=>toast('策略 JSON 已导出')}><Download/>导出当前方案</button><button className="settingAction" onClick={()=>toast('请选择此前导出的策略文件')}><Copy/>导入历史方案</button><div className="safeState"><CheckCircle2/>所有配置仅保存在本机浏览器和当前 GitHub 演示中</div></section></div></div>}
 
+const optimizationSeed={
+ pc:[
+  {id:'pc-1',area:'C 本地热门',title:'支持修改算法排序数量与排序规则',dependency:'需要开发',owner:'开发',status:'待启动'},
+  {id:'pc-2',area:'B 首屏 Banner',title:'1号位棋牌游戏排期轮换',dependency:'纯配置',owner:'运营',status:'待启动'},
+  {id:'pc-3',area:'G 导航 Tab',title:'优化游戏排序',dependency:'纯配置',owner:'运营',status:'待启动'},
+  {id:'pc-4',area:'顶部搜索',title:'搜索关联词优化',dependency:'纯配置',owner:'运营',status:'待启动'},
+  {id:'pc-5',area:'F 精品游戏',title:'游戏排序优化',dependency:'纯配置',owner:'运营',status:'待启动'},
+  {id:'pc-6',area:'J 游戏导航',title:'游戏分类栏展示优化',dependency:'需要产品支持',owner:'产品',status:'待启动'},
+  {id:'pc-7',area:'全链路',title:'新手引导和流失拦截优化',dependency:'持续运营',owner:'产品+运营',status:'待启动'},
+ ],
+ mobile:[
+  {id:'m-1',area:'本地热门',title:'本地热门持续优化',dependency:'持续运营',owner:'运营+开发',status:'待启动'},
+  {id:'m-2',area:'Banner',title:'Banner图素材换新',dependency:'纯配置',owner:'运营+设计',status:'待启动'},
+  {id:'m-3',area:'全链路',title:'新手引导和流失拦截优化',dependency:'持续运营',owner:'产品+运营',status:'待启动'},
+ ]
+};
+function OptimizationPage({toast}){
+ const[platform,setPlatform]=useState('pc');
+ const[tasks,setTasks]=useState(()=>{try{return JSON.parse(localStorage.getItem('optimization-roadmap-v1'))||optimizationSeed}catch{return optimizationSeed}});
+ const update=(id,status)=>setTasks(prev=>({...prev,[platform]:prev[platform].map(t=>t.id===id?{...t,status}:t)}));
+ const save=()=>{localStorage.setItem('optimization-roadmap-v1',JSON.stringify(tasks));toast('优化计划进度已保存')};
+ const current=tasks[platform],done=current.filter(t=>t.status==='已完成').length;
+ return <div className="modulePage optimizationPage"><PageHeader title="下一阶段优化计划" desc="PC与移动端分开管理，直接对应现有分发位置与执行依赖。" action={<button className="solidBtn" onClick={save}><Save size={15}/>保存进度</button>}/>
+  <div className="platformTabs"><button className={platform==='pc'?'on':''} onClick={()=>setPlatform('pc')}><Monitor/>PC 优化 <b>7</b></button><button className={platform==='mobile'?'on':''} onClick={()=>setPlatform('mobile')}><Smartphone/>移动优化 <b>3</b></button></div>
+  {platform==='pc'?<div className="roadmapVisual"><img src="./pc-android-optimization-roadmap.png" alt="PC与安卓分发优化总览图"/><div><h3>PC 本阶段目标</h3><p>先把可配置项快速落地，再推进本地热门算法能力与游戏导航产品改造。</p><div className="focusMetric"><span>当前进度</span><strong>{done} / {current.length}</strong></div><div className="dependencyLegend"><span className="dev">需要开发</span><span className="config">纯配置</span><span className="product">需要产品支持</span><span className="operate">持续运营</span></div></div></div>:<div className="mobileFocus"><Smartphone/><div><h3>移动端优化重点</h3><p>保持本地热门持续迭代，以 Banner 素材换新承担短期增量，同时补齐新手引导与流失拦截。</p></div><strong>{done} / {current.length}</strong></div>}
+  <div className="roadmapTable"><div className="roadmapHead"><b>序号</b><b>对应位置</b><b>优化措施</b><b>执行类型</b><b>协作方</b><b>进度</b></div>{current.map((task,index)=><div className="roadmapRow" key={task.id}><span>{String(index+1).padStart(2,'0')}</span><b>{task.area}</b><strong>{task.title}</strong><em className={task.dependency==='需要开发'?'dev':task.dependency==='纯配置'?'config':task.dependency==='需要产品支持'?'product':'operate'}>{task.dependency}</em><span>{task.owner}</span><select value={task.status} onChange={e=>update(task.id,e.target.value)}><option>待启动</option><option>进行中</option><option>已完成</option></select></div>)}</div>
+  <div className="roadmapSummary"><b>总体优先级</b><span>第一阶段：Banner排期、导航Tab、搜索关联词、精品游戏排序</span><span>第二阶段：本地热门算法灵活配置、游戏导航分类展示</span><span>持续项：新手引导和流失拦截</span></div>
+ </div>
+}
+
 function App(){
  const saved=()=>{try{return JSON.parse(localStorage.getItem('pc-lobby-strategy')||'null')}catch{return null}};
  const cached=useMemo(saved,[]);
@@ -110,8 +141,8 @@ function App(){
  const toast=t=>{setNotice(typeof t==='string'?t:'模拟完成：结果已按当前策略更新');setTimeout(()=>setNotice(''),2200)};
  const reset=()=>{localStorage.removeItem('pc-lobby-strategy');setPersona('new');setZones(initialZones);setSettings({mode:'dynamic',local:50,monetize:30,explore:20});toast('已恢复默认策略')};
  const savePlan=()=>{localStorage.setItem('pc-lobby-strategy',JSON.stringify({persona,zones,settings,savedAt:new Date().toISOString()}));toast('方案已保存，刷新后仍会保留')};
- const nav=[[Home,'沙盘首页','home'],[BarChart3,'策略管理','strategies'],[FlaskConical,'实验中心','experiments'],[Library,'游戏库','library'],[ShieldCheck,'规则中心','rules'],[Settings,'系统设置','settings']];
- const pages={strategies:<StrategyPage plans={plans} setPlans={setPlans} onEdit={()=>setView('home')} toast={toast}/>,experiments:<ExperimentPage experiments={experiments} setExperiments={setExperiments} toast={toast}/>,library:<GameLibraryPage games={games} setGames={setGames} toast={toast}/>,rules:<RulesPage rules={rules} setRules={setRules} toast={toast}/>,settings:<SettingsPage prefs={prefs} setPrefs={setPrefs} toast={toast}/>};
+ const nav=[[Home,'沙盘首页','home'],[ClipboardList,'优化计划','roadmap'],[BarChart3,'策略管理','strategies'],[FlaskConical,'实验中心','experiments'],[Library,'游戏库','library'],[ShieldCheck,'规则中心','rules'],[Settings,'系统设置','settings']];
+ const pages={roadmap:<OptimizationPage toast={toast}/>,strategies:<StrategyPage plans={plans} setPlans={setPlans} onEdit={()=>setView('home')} toast={toast}/>,experiments:<ExperimentPage experiments={experiments} setExperiments={setExperiments} toast={toast}/>,library:<GameLibraryPage games={games} setGames={setGames} toast={toast}/>,rules:<RulesPage rules={rules} setRules={setRules} toast={toast}/>,settings:<SettingsPage prefs={prefs} setPrefs={setPrefs} toast={toast}/>};
  return <div className="app"><nav className="appNav"><div className="brand">游</div>{nav.map(([I,t,key])=><button className={view===key?'active':''} onClick={()=>setView(key)} key={key}><I/><span>{t}</span></button>)}</nav><div className="workspace"><header className="toolbar"><div><h1>PC游戏大厅分发策略沙盘</h1><small>{nav.find(x=>x[2]===view)?.[1]} · 分发策略工作台</small></div>{view==='home'?<><div className="persona"><button className={persona==='new'?'on':''} onClick={()=>setPersona('new')}>新用户视角</button><button className={persona==='old'?'on':''} onClick={()=>setPersona('old')}>老用户视角</button></div><div className="toolActions"><button onClick={reset}><RotateCcw size={15}/>重置</button><button className="primary" onClick={savePlan}><Save size={15}/>保存方案</button></div></>:<button className="backSandbox" onClick={()=>setView('home')}>返回沙盘编辑</button>}</header>{view==='home'?<div className="content"><div className="preview"><div className="previewTitle"><span>PC游戏大厅预览（{persona==='new'?'新用户':'老用户'}视角）</span><small>点击绿色虚线区域进行编辑</small></div><Lobby persona={persona} zones={zones} games={games} selected={selected} setSelected={setSelected}/></div><Inspector selected={selected} zones={zones} setZones={setZones} games={games} persona={persona} settings={settings} setSettings={setSettings} toast={toast}/></div>:pages[view]}</div>{notice&&<div className="toast">{notice}</div>}</div>
 }
 createRoot(document.getElementById('root')).render(<App/>);
