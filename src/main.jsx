@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChevronRight, Monitor, Smartphone, X } from 'lucide-react';
+import { Monitor, Smartphone, X } from 'lucide-react';
 import './product.css';
 import InteractiveAndroidSimulator from './AndroidSimulator';
+import InteractivePcLobby from './PcLobby';
 
 const strategies = {
   A: { name: '我的应用', current: '历史游玩游戏召回', plan: '本阶段保持现状', type: '保持现状', note: '继续承担老用户历史游戏快速召回，不纳入本轮改造。' },
@@ -18,21 +19,6 @@ const strategies = {
   SEARCH: { name: '搜索框', current: '按游戏名称搜索', plan: '优化搜索关联词', type: '纯配置', note: '补充别名、玩法词和高频错别字，提高搜索后的游戏进入率。' },
   GUIDE: { name: '新手引导与流失拦截', current: '大厅缺少统一的新用户首玩引导与离开前承接', plan: '优化新手引导和流失拦截', type: '持续优化', note: '围绕首次进入、无点击、准备离开三个时机设计引导，并分别观察新用户分发率和老用户二次分发率。' },
 };
-
-const hotspots = [
-  { id: 'A', page: 1, x: 2.7, y: 5.4, w: 10.8, h: 55.4 },
-  { id: 'B', page: 1, x: 14.1, y: 5.4, w: 68.3, h: 25.7 },
-  { id: 'C', page: 1, x: 15.1, y: 31.8, w: 67.8, h: 17.4 },
-  { id: 'D', page: 1, x: 3.2, y: 61.0, w: 9.7, h: 26.4 },
-  { id: 'E', page: 1, x: 13.8, y: 50.4, w: 68.9, h: 25.8 },
-  { id: 'F', page: 1, x: 13.8, y: 76.8, w: 68.9, h: 22.5 },
-  { id: 'G', page: 1, x: 83.0, y: 55.0, w: 15.9, h: 26.5 },
-  { id: 'H', page: 1, x: 83.0, y: 82.0, w: 16.0, h: 17.7 },
-  { id: 'SEARCH', page: 1, x: 29.8, y: 1.0, w: 16.2, h: 3.4 },
-  { id: 'GUIDE', page: 1, x: 83.1, y: 7.0, w: 15.6, h: 47.5 },
-  { id: 'I', page: 2, x: 13.6, y: 16.3, w: 68.7, h: 26.0 },
-  { id: 'J', page: 2, x: 13.6, y: 43.2, w: 70.0, h: 55.1 },
-];
 
 function StrategyModal({ id, onClose }) {
   const item = strategies[id];
@@ -56,19 +42,6 @@ function StrategyModal({ id, onClose }) {
   </div>;
 }
 
-function Screen({ page, onSelect }) {
-  return <div className="screen" data-page={page}>
-    <img src={`./pc-lobby-screen-${page}.png`} alt={`PC游戏大厅产品界面第${page}屏`} />
-    {hotspots.filter(item => item.page === page).map(item => <button
-      key={item.id}
-      className="hotspot"
-      style={{ left: `${item.x}%`, top: `${item.y}%`, width: `${item.w}%`, height: `${item.h}%` }}
-      onClick={() => onSelect(item.id)}
-      aria-label={`查看${strategies[item.id].name}优化策略`}
-    ><span>{item.id.length === 1 ? item.id : item.id === 'SEARCH' ? '搜索' : '引导'}</span></button>)}
-  </div>;
-}
-
 function App() {
   const [platform, setPlatform] = useState('pc');
   const [selected, setSelected] = useState(null);
@@ -77,10 +50,7 @@ function App() {
       <button className={platform === 'pc' ? 'active' : ''} onClick={() => setPlatform('pc')}><Monitor />PC新大厅</button>
       <button className={platform === 'android' ? 'active' : ''} onClick={() => setPlatform('android')}><Smartphone />安卓</button>
     </nav>
-    {platform === 'pc' ? <div className="pcPage">
-      <div className="pageIntro"><div><b>PC新大厅</b><span>点击大厅中的分发位置，查看对应的后续优化策略</span></div><span>可交互位置 <strong>A–J</strong><ChevronRight /></span></div>
-      <div className="lobbyCanvas"><Screen page={1} onSelect={setSelected} /><Screen page={2} onSelect={setSelected} /></div>
-    </div> : <InteractiveAndroidSimulator />}
+    {platform === 'pc' ? <InteractivePcLobby onSelect={setSelected}/> : <InteractiveAndroidSimulator />}
     {selected && <StrategyModal id={selected} onClose={() => setSelected(null)} />}
   </main>;
 }
