@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { ChevronRight, Monitor, RotateCcw, Smartphone, X } from 'lucide-react';
+import { ChevronRight, Monitor, Smartphone, X } from 'lucide-react';
 import './product.css';
+import InteractiveAndroidSimulator from './AndroidSimulator';
 
 const strategies = {
   A: { name: '我的应用', current: '历史游玩游戏召回', plan: '本阶段保持现状', type: '保持现状', note: '继续承担老用户历史游戏快速召回，不纳入本轮改造。' },
@@ -68,142 +69,6 @@ function Screen({ page, onSelect }) {
   </div>;
 }
 
-const androidPages = {
-  recommend: 'android-recommend.png',
-  local: 'android-local.png',
-  poker: 'android-poker.png',
-  mahjong: 'android-mahjong.png',
-  new: 'android-new-games.png',
-  web: 'android-web-games.png',
-};
-
-const androidTabs = [
-  { id: 'recommend', label: '推荐', x: 1, w: 7 },
-  { id: 'local', label: '同城棋牌', x: 8, w: 13 },
-  { id: 'poker', label: '扑克', x: 21, w: 8 },
-  { id: 'mahjong', label: '麻将', x: 29, w: 8 },
-  { id: 'new', label: '新游专区', x: 37, w: 13 },
-  { id: 'web', label: '网游', x: 50, w: 8 },
-];
-
-function AndroidGuideModal({ type, onClose, onTry, onSearch }) {
-  if (!type) return null;
-  return <div className="mobileMask">
-    <section className="mobileGuide" role="dialog" aria-modal="true" aria-label="替代游戏推荐">
-      <button className="mobileClose" aria-label="关闭引导" onClick={onClose}><X /></button>
-      <div className="guideGameIcon">掼</div>
-      <small>为你找到一款本地热门</small>
-      <h2>没有找到想玩的游戏吗？</h2>
-      <p>可以先试试这款本地热门游戏</p>
-      <article><b>掼蛋</b><span>同地区新用户启动率最高</span><em>简单易上手 · 匹配快</em></article>
-      <button className="tryNow" onClick={onTry}>立即试玩</button>
-      <button className="keepSearch" onClick={onSearch}>继续搜索</button>
-    </section>
-  </div>;
-}
-
-function AndroidSimulator() {
-  const [page, setPage] = useState('recommend');
-  const [secondaryClicks, setSecondaryClicks] = useState(0);
-  const [searches, setSearches] = useState(0);
-  const [query, setQuery] = useState('');
-  const [weakGuide, setWeakGuide] = useState(false);
-  const [guide, setGuide] = useState(null);
-  const [resultCard, setResultCard] = useState(false);
-  const [started, setStarted] = useState(false);
-  const [weakShown, setWeakShown] = useState(false);
-  const [strongShown, setStrongShown] = useState(false);
-  const [homeDepth, setHomeDepth] = useState(0);
-  const [secondaryGuide, setSecondaryGuide] = useState(false);
-  const [secondaryShown, setSecondaryShown] = useState(false);
-
-  const selectTab = id => {
-    setSecondaryGuide(false);
-    if (started) return setPage(id);
-    setPage(id);
-    if (id !== 'recommend') {
-      const next = secondaryClicks + 1;
-      setSecondaryClicks(next);
-      if (next >= 3 && !weakShown) {
-        setWeakShown(true);
-        setWeakGuide(true);
-      }
-    }
-  };
-  const browseHome = event => {
-    if (page !== 'recommend' || started || secondaryShown || event.deltaY <= 0) return;
-    const next = Math.min(100, homeDepth + 34);
-    setHomeDepth(next);
-    if (next >= 85) {
-      setSecondaryShown(true);
-      setSecondaryGuide(true);
-    }
-  };
-  const openSearch = () => { setPage('search'); setWeakGuide(false); };
-  const search = () => {
-    if (started) return;
-    const next = searches + 1;
-    setSearches(next);
-    if (next < 3) setResultCard(true);
-    if (next >= 3 && !strongShown) {
-      setStrongShown(true);
-      setResultCard(false);
-      setGuide('searchFallback');
-    }
-  };
-  const launch = () => {
-    setStarted(true);
-    setGuide(null);
-    setWeakGuide(false);
-    setSecondaryGuide(false);
-    setResultCard(false);
-  };
-  const reset = () => {
-    setPage('recommend'); setSecondaryClicks(0); setSearches(0); setQuery('');
-    setWeakGuide(false); setGuide(null); setResultCard(false); setStarted(false);
-    setWeakShown(false); setStrongShown(false);
-    setHomeDepth(0); setSecondaryGuide(false); setSecondaryShown(false);
-  };
-
-  return <div className="androidPage">
-    <div className="androidIntro"><div><b>安卓行为引导模拟</b><span>按真实用户路径操作，满足条件后自动触发对应引导</span></div><button onClick={reset}><RotateCcw />重置行为</button></div>
-    <div className="androidWorkspace">
-      <div className="phoneShell">
-        <div className="phoneScreen" onWheel={browseHome}>
-          <img src={`./${page === 'search' ? 'android-search.png' : androidPages[page]}`} alt="安卓竖版同城游界面" />
-          {page !== 'search' && <>
-            <button className="mobileSearchHotspot" aria-label="进入搜索页" onClick={openSearch} />
-            <div className="mobileTabHotspots">{androidTabs.map(tab => <button key={tab.id} aria-label={`点击${tab.label}页签`} style={{left:`${tab.x}%`,width:`${tab.w}%`}} onClick={() => selectTab(tab.id)} />)}</div>
-            <button className="gameLaunchHotspot" aria-label="启动当前推荐游戏" onClick={launch} />
-          </>}
-          {page === 'search' && <>
-            <button className="searchBack" aria-label="返回安卓首页" onClick={() => setPage('recommend')} />
-            <input className="searchInput" aria-label="搜索游戏" value={query} onChange={event => setQuery(event.target.value)} onKeyDown={event => event.key === 'Enter' && search()} autoFocus placeholder="掼蛋" />
-            <button className="searchSubmit" aria-label="提交搜索" onClick={search} />
-            {resultCard && <div className="resultRecommend"><small>没找到？你可能会喜欢</small><div><span className="miniGuideIcon">掼</span><b>本地热门 · 掼蛋</b><button onClick={launch}>试玩</button></div></div>}
-          </>}
-          {weakGuide && <button className="searchBubble" onClick={openSearch}>找不到合适的游戏吗？<b>可以来搜索试试</b><i /></button>}
-          {secondaryGuide && <button className="secondaryTabBubble" onClick={() => selectTab('poker')}>更多游戏可以点击这里探索<i /></button>}
-          {page === 'recommend' && !secondaryShown && <div className="homeDepth"><span style={{height:`${homeDepth}%`}}/><small>{homeDepth < 85 ? '向下滑动浏览首页' : '已浏览到底'}</small></div>}
-          {started && <div className="startedToast">已启动「掼蛋」，本会话停止触发引导</div>}
-          <AndroidGuideModal type={guide} onClose={() => setGuide(null)} onTry={launch} onSearch={() => {setGuide(null);setPage('search')}} />
-        </div>
-      </div>
-      <aside className="behaviorPanel">
-        <header><span>实时行为状态</span><i className={started ? 'done' : ''}>{started ? '已启动游戏' : '尚未启动游戏'}</i></header>
-        <div className="behaviorCount"><span>二级页签点击</span><strong>{secondaryClicks}<small> / 3</small></strong></div>
-        <div className="behaviorCount"><span>无点击搜索</span><strong>{searches}<small> / 3</small></strong></div>
-        <div className="behaviorCount"><span>首页浏览深度</span><strong>{homeDepth}<small>%</small></strong></div>
-        <section className={secondaryShown ? 'triggered' : ''}><b>场景 0 · 二级页签引导</b><p>在推荐首页向下滑动，浏览深度达到 85%，期间未启动游戏。</p><em>{secondaryShown ? '已触发' : '等待触发'}</em></section>
-        <section className={weakShown ? 'triggered' : ''}><b>场景 1 · 搜索弱引导</b><p>二级页签累计点击达到 3 次时立即触发，期间未启动游戏。</p><em>{weakShown ? '已触发' : '等待触发'}</em></section>
-        <section className={strongShown ? 'triggered' : ''}><b>场景 2 · 替代游戏强引导</b><p>进入搜索页，连续提交搜索 3 次，不点击推荐游戏。</p><em>{strongShown ? '已触发' : '等待触发'}</em></section>
-        <section className={resultCard ? 'triggered' : ''}><b>场景 3 · 结果页推荐卡</b><p>提交搜索但未点击游戏时，在结果页强化推荐。</p><em>{resultCard ? '展示中' : '等待触发'}</em></section>
-        <footer>频控已模拟：两类弱引导各最多一次、不会同时出现；启动游戏后停止触发。</footer>
-      </aside>
-    </div>
-  </div>;
-}
-
 function App() {
   const [platform, setPlatform] = useState('pc');
   const [selected, setSelected] = useState(null);
@@ -215,7 +80,7 @@ function App() {
     {platform === 'pc' ? <div className="pcPage">
       <div className="pageIntro"><div><b>PC新大厅</b><span>点击大厅中的分发位置，查看对应的后续优化策略</span></div><span>可交互位置 <strong>A–J</strong><ChevronRight /></span></div>
       <div className="lobbyCanvas"><Screen page={1} onSelect={setSelected} /><Screen page={2} onSelect={setSelected} /></div>
-    </div> : <AndroidSimulator />}
+    </div> : <InteractiveAndroidSimulator />}
     {selected && <StrategyModal id={selected} onClose={() => setSelected(null)} />}
   </main>;
 }
