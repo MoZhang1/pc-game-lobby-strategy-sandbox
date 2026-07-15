@@ -139,7 +139,7 @@ function ReviewPage() {
     <section className="pageSection"><div className="sectionTitle"><div><h2>优化前后趋势</h2><p>虚线为 7 月 8 日本地热门优化上线</p></div></div><Card className="chartCard"><TrendChart items={daily} eventIds={['60101404', '60100102']} annotate /></Card></section>
     <section className="pageSection"><div className="sectionTitle"><div><h2>模块归因与问题定位</h2><p>按优化前后变化幅度排序 · 单位：pp</p></div></div><Card className="attributionCard"><AttributionTable /></Card></section>
     <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入本地热门优化成效</p></div></div><Card className="bannerCardV2"><div><span>有活动 Banner 点击日期</span><b>70.45%</b><small>6 天</small></div><div><span>无活动 Banner 点击日期</span><b>68.47%</b><small>24 天</small></div><aside><b>+1.98pp</b><span>历史正向相关，现有数据不能证明因果</span></aside></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>保持本地热门当前方案。</b><span>点击提升已验证。</span></li><li><b>优先排查游戏模块开始玩的承接。</b><span>检查承接游戏与排序。</span></li><li><b>活动 Banner 单列记录。</b><span>不和改版混合归因。</span></li></ol></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>下周优化本地热门的新用户游戏位。</b><span>减少 1 个营收游戏位，增加 1 个棋牌游戏位。</span></li><li><b>定位下降明显模块的原因。</b><span>优先拆解“游戏模块开始玩”下降 1.25pp：承接游戏、排序与点击后的启动链路。</span></li><li><b>活动 Banner 单列记录。</b><span>不与本地热门改版混合归因。</span></li></ol></section>
   </>;
 }
 
