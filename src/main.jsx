@@ -4,6 +4,7 @@ import { Monitor, Smartphone, X } from 'lucide-react';
 import './product.css';
 import InteractiveAndroidSimulator from './AndroidSimulator';
 import InteractivePcLobby from './PcLobby';
+import ConversionDashboard from './AndroidConversionDashboard';
 
 const strategies = {
   A: { name: '我的应用', current: '历史游玩游戏召回', plan: '本阶段保持现状', type: '保持现状', note: '继续承担老用户历史游戏快速召回，不纳入本轮改造。' },
@@ -55,4 +56,5 @@ function App() {
   </main>;
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+const isConversionDashboard = window.location.pathname.includes('android-conversion') || new URLSearchParams(window.location.search).get('page') === 'android-conversion';
+createRoot(document.getElementById('root')).render(isConversionDashboard ? <ConversionDashboard /> : <App />);

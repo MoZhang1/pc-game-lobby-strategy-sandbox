@@ -1,1 +1,1 @@
-{"scripts":{"dev":"vite --host 127.0.0.1","build":"vite build"},"dependencies":{"@vitejs/plugin-react":"latest","vite":"latest","react":"latest","react-dom":"latest","lucide-react":"latest"},"devDependencies":{}}
+{"scripts":{"dev":"vite --host 127.0.0.1","dev:lan":"vite --host 0.0.0.0 --port 1505","build":"vite build"},"dependencies":{"@astryxdesign/core":"^0.1.5","@astryxdesign/theme-neutral":"^0.1.5","@vitejs/plugin-react":"latest","lucide-react":"latest","react":"latest","react-dom":"latest","vite":"latest"}}
