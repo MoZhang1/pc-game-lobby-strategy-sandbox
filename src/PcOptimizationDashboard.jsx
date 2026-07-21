@@ -41,14 +41,14 @@ function ConclusionSummary({ active }) {
 
 export default function PcOptimizationDashboard() {
   const [active, setActive] = useState('march');
+  const [section, setSection] = useState('conclusions');
   const batch = batches[active];
   const rows = useMemo(() => batch.rows, [batch]);
   return <main className="minimal-dashboard">
     <header><div><h1>PC 新大厅改造前后对比</h1><p>只使用 SQL 结果表中的两段时间均值；不含分日趋势或补造数据。</p></div><span>数据整理：2026.07.21</span></header>
     <nav aria-label="选择改造节点" className="minimal-tabs">{Object.entries(batches).map(([key, item]) => <button key={key} className={active === key ? 'active' : ''} onClick={() => setActive(key)}>{item.label}<small>{item.period}</small></button>)}</nav>
     <section className="minimal-scope"><b>{batch.label}</b><span>{batch.period}</span><span>{batch.sample}</span><i>指标：新增率、人均对局、次留、3 日留存、7 日留存</i></section>
-    <Summary rows={rows} />
-    <ConclusionSummary active={active} />
-    <section className="minimal-table"><header><h2>游戏级改造前后差值</h2><p>正数表示改造后均值更高；单位：新增率 / 留存为百分点，人均对局为局数。</p></header><div><table><thead><tr><th>游戏</th><th>app_id</th>{fields.map(([label]) => <th key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={row[1]}><td>{row[0]}</td><td>{row[1]}</td>{fields.map(([, index, suffix]) => <td className={tone(row[index])} key={index}>{format(row[index], suffix)}</td>)}</tr>)}</tbody><tfoot><tr><th colSpan="2">简单平均</th>{fields.map(([, index, suffix]) => <th className={tone(mean(rows, index))} key={index}>{format(mean(rows, index), suffix)}</th>)}</tr></tfoot></table></div></section>
+    <nav aria-label="选择看板内容" className="section-tabs"><button className={section === 'conclusions' ? 'active' : ''} onClick={() => setSection('conclusions')}>数据结论</button><button className={section === 'table' ? 'active' : ''} onClick={() => setSection('table')}>数据明细</button></nav>
+    {section === 'conclusions' ? <><Summary rows={rows} /><ConclusionSummary active={active} /></> : <section className="minimal-table"><header><h2>游戏级改造前后差值</h2><p>正数表示改造后均值更高；单位：新增率 / 留存为百分点，人均对局为局数。</p></header><div><table><thead><tr><th>游戏</th><th>app_id</th>{fields.map(([label]) => <th key={label}>{label}</th>)}</tr></thead><tbody>{rows.map(row => <tr key={row[1]}><td>{row[0]}</td><td>{row[1]}</td>{fields.map(([, index, suffix]) => <td className={tone(row[index])} key={index}>{format(row[index], suffix)}</td>)}</tr>)}</tbody><tfoot><tr><th colSpan="2">简单平均</th>{fields.map(([, index, suffix]) => <th className={tone(mean(rows, index))} key={index}>{format(mean(rows, index), suffix)}</th>)}</tr></tfoot></table></div></section>}
   </main>;
 }
