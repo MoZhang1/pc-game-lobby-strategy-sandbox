@@ -5,6 +5,7 @@ import './product.css';
 import InteractiveAndroidSimulator from './AndroidSimulator';
 import InteractivePcLobby from './PcLobby';
 import ConversionDashboard from './AndroidConversionDashboard';
+import PcOptimizationDashboard from './PcOptimizationDashboard';
 
 const strategies = {
   A: { name: '我的应用', current: '历史游玩游戏召回', plan: '本阶段保持现状', type: '保持现状', note: '继续承担老用户历史游戏快速召回，不纳入本轮改造。' },
@@ -56,5 +57,7 @@ function App() {
   </main>;
 }
 
-const isConversionDashboard = window.location.pathname.includes('android-conversion') || new URLSearchParams(window.location.search).get('page') === 'android-conversion';
-createRoot(document.getElementById('root')).render(isConversionDashboard ? <ConversionDashboard /> : <App />);
+const page = new URLSearchParams(window.location.search).get('page');
+const isConversionDashboard = window.location.pathname.includes('android-conversion') || page === 'android-conversion';
+const isPcOptimizationDashboard = window.location.pathname.includes('pc-optimization') || page === 'pc-optimization';
+createRoot(document.getElementById('root')).render(isPcOptimizationDashboard ? <PcOptimizationDashboard /> : isConversionDashboard ? <ConversionDashboard /> : <App />);
