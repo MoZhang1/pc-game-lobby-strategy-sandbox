@@ -52,11 +52,11 @@ const formatPp = value => `${value >= 0 ? '+' : ''}${value.toFixed(2)}pp`;
 const EXPERIMENTS = [
   {
     id: 'local-hot-v1', title: '实验 1 · 本地热门优化', module: '本地热门',
-    change: '7/8–7/14：本地热门优化上线', start: '2026-07-08', end: '2026-07-14', beforeStart: '2026-07-01', beforeEnd: '2026-07-07',
+    content: '根据各市实际新增游戏排序，优化本地热门推荐排序。', start: '2026-07-08', end: '2026-07-14', beforeStart: '2026-07-01', beforeEnd: '2026-07-07',
   },
   {
     id: 'local-hot-v2', title: '实验 2 · 新用户游戏位调整', module: '本地热门',
-    change: '7/15–7/21：新用户增加 1 个棋牌游戏位，减少 1 个营收游戏位', start: '2026-07-15', end: '2026-07-21', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
+    content: '调整新用户看到的本地热门展示：增加 1 个棋牌游戏位，减少 1 个营收游戏位置。', start: '2026-07-15', end: '2026-07-21', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
   },
 ];
 
@@ -151,19 +151,24 @@ function ReviewPage() {
     if (event.id === '60100602') conclusion = '活动临时投放，作为环境变量单列，不与实验混合归因';
     return { id: event.id, label: event.shortLabel, before: beforeRate, after: afterRate, delta, conclusion };
   }).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const moduleVerdict = localDelta > 0 ? '正优化' : localDelta < 0 ? '负优化' : '无明显变化';
+  const startupVerdict = totalDelta > 0 ? '正优化' : totalDelta < 0 ? '负优化' : '无明显变化';
+  const candidate = driverItems.filter(item => item.id !== '60100102' && Math.sign(item.delta) === Math.sign(totalDelta)).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
+  const bannerOnRows = after.rows.filter(item => item.uv['60100602'] > 0);
+  const bannerOffRows = after.rows.filter(item => item.uv['60100602'] === 0);
+  const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
+  const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
   const trendItems = daily.filter(item => item.date >= experiment.beforeStart && item.date <= experiment.end);
-  const currentExperimentConclusion = experimentId === 'local-hot-v2'
-    ? `本周总启动提升 ${formatPp(totalDelta)}，但本地热门点击下降 ${formatPp(localDelta)}；同时活动 Banner 从 ${before.stats['60100602'].rate.toFixed(2)}% 变为 ${after.stats['60100602'].rate.toFixed(2)}%，因此当前不能把总启动回升直接归因于“增加棋牌游戏位、减少营收游戏位”。`
-    : `本地热门点击提升 ${formatPp(localDelta)}，但正确口径下总启动下降 ${formatPp(totalDelta)}；最大同步负向模块为“游戏模块开始玩”${formatPp(playDelta)}，优化方向只能证明点击提升，未证明总启动提升。`;
   return <>
     <header className="pageIntro"><div><h1>实验复盘</h1><p>按实验区间切换查看 · 总启动＝用户启动＋本地包相关点击</p></div><span>固定实验口径</span></header>
     <Card className="experimentSelector"><div><b>选择实验区间</b><span>具体实验模块在下方实验分段中说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{EXPERIMENTS.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
-    <section className="experimentBlock"><div className="sectionTitle"><div><h2>{experiment.title}</h2><p>实验模块：{experiment.module} · {experiment.change}</p></div></div>
-      <div className="reviewCallout"><b>问题定位结论</b><p>{currentExperimentConclusion}</p></div>
-      <div className="reviewMetrics"><Metric label="实验前总启动占比" value={`${before.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${before.stats.TOTAL_START.uv.toLocaleString()} / ${before.users.toLocaleString()} · ${formatDate(experiment.beforeStart)}–${formatDate(experiment.beforeEnd)}`} icon={BarChart3} /><Metric label="实验期总启动占比" value={`${after.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${after.stats.TOTAL_START.uv.toLocaleString()} / ${after.users.toLocaleString()} · ${formatDate(experiment.start)}–${formatDate(experiment.end)}`} tone={totalDelta >= 0 ? 'positive' : 'negative'} icon={totalDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="本地热门点击变化" value={formatPp(localDelta)} helper={`${before.stats['60100102'].rate.toFixed(2)}% → ${after.stats['60100102'].rate.toFixed(2)}%`} tone={localDelta >= 0 ? 'positive' : 'negative'} icon={localDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="游戏模块开始玩变化" value={formatPp(playDelta)} helper={`${before.stats['60103909'].rate.toFixed(2)}% → ${after.stats['60103909'].rate.toFixed(2)}%`} tone={playDelta >= 0 ? 'positive' : 'negative'} icon={playDelta >= 0 ? TrendingUp : TrendingDown} /></div>
+    <section className="experimentBlock"><div className="sectionTitle"><div><h2>{experiment.title}</h2><p>{formatDate(experiment.start)}–{formatDate(experiment.end)} · 对比 {formatDate(experiment.beforeStart)}–{formatDate(experiment.beforeEnd)}</p></div></div>
+      <Card className="experimentBrief"><div><span>实验模块</span><b>{experiment.module}</b></div><div><span>实验内容</span><b>{experiment.content}</b></div></Card>
+      <div className="reviewCallout"><b>实验效果结论</b><p>对实验模块：<strong className={localDelta >= 0 ? 'positive' : 'negative'}>{moduleVerdict}</strong>（本地热门点击 {formatPp(localDelta)}）。对总启动：<strong className={totalDelta >= 0 ? 'positive' : 'negative'}>{startupVerdict}</strong>（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p>若总启动变化不是由实验模块带动，当前模块粒度下的最大同步候选是<strong>{candidate.label}</strong>（{formatPp(candidate.delta)}）。这只是同步信号，不代表因果；模块点击用户可重叠，现有数据无法把总启动变化精确拆到单一模块。</p></div>
+      <div className="reviewMetrics"><Metric label="对实验模块" value={moduleVerdict} helper={`本地热门点击 ${before.stats['60100102'].rate.toFixed(2)}% → ${after.stats['60100102'].rate.toFixed(2)}% · ${formatPp(localDelta)}`} tone={localDelta >= 0 ? 'positive' : 'negative'} icon={localDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="对总启动" value={startupVerdict} helper={`${before.stats.TOTAL_START.rate.toFixed(2)}% → ${after.stats.TOTAL_START.rate.toFixed(2)}% · ${formatPp(totalDelta)}`} tone={totalDelta >= 0 ? 'positive' : 'negative'} icon={totalDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验期总启动占比" value={`${after.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${after.stats.TOTAL_START.uv.toLocaleString()} / ${after.users.toLocaleString()} · ${formatDate(experiment.start)}–${formatDate(experiment.end)}`} icon={BarChart3} /><Metric label="最大同步候选" value={candidate.label} helper={`${formatPp(candidate.delta)} · 仅为候选，不作因果结论`} tone={candidate.delta >= 0 ? 'positive' : 'negative'} icon={candidate.delta >= 0 ? TrendingUp : TrendingDown} /></div>
       <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>仅保留实验前后各 7 天 · 虚线为实验上线</p></div></div><Card className="chartCard"><TrendChart items={trendItems} eventIds={['TOTAL_START', '60100102']} markerDate={experiment.start} markerLabel={`${formatDate(experiment.start)} 实验上线`} /></Card></section>
       <section className="pageSection"><div className="sectionTitle"><div><h2>模块归因与问题定位</h2><p>按实验前后变化幅度排序 · 单位：pp</p></div></div><Card className="attributionCard"><AttributionTable items={driverItems} beforeLabel="实验前" afterLabel="实验期" /></Card></section>
-      <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入本地热门实验成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>仅作环境变量，不作实验因果判断</span></aside></Card></section>
+      <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入本地热门实验成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>{bannerDayGap === null ? '实验期无 Banner 点击日，暂无可比拆分' : `Banner 点击日总启动较无点击日高 ${formatPp(bannerDayGap)}；仅为相关性`}</span></aside></Card></section>
       <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>补充本地热门游戏位的明细数据。</b><span>分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。</span></li><li><b>持续定位游戏模块开始玩的下降原因。</b><span>优先检查承接游戏、排序和点击后的启动链路。</span></li></ol></section>
     </section>
   </>;
