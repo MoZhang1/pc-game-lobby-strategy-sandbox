@@ -159,6 +159,9 @@ function ReviewPage() {
   const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
   const trendItems = daily.filter(item => item.date >= experiment.beforeStart && item.date <= experiment.end);
+  const nextSteps = experimentId === 'local-hot-v2'
+    ? [{ title: '继续按当前规则观察一周数据变化。', detail: '活动 Banner 的投放会影响本地热门点击效果，需要先排除该环境变量后再判断实验结果。' }]
+    : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
   return <>
     <header className="pageIntro"><div><h1>实验复盘</h1><p>按实验区间切换查看 · 总启动＝用户启动＋本地包相关点击</p></div><span>固定实验口径</span></header>
     <Card className="experimentSelector"><div><b>选择实验区间</b><span>具体实验模块在下方实验分段中说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{EXPERIMENTS.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
@@ -169,7 +172,7 @@ function ReviewPage() {
       <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>仅保留实验前后各 7 天 · 虚线为实验上线</p></div></div><Card className="chartCard"><TrendChart items={trendItems} eventIds={['TOTAL_START', '60100102']} markerDate={experiment.start} markerLabel={`${formatDate(experiment.start)} 实验上线`} /></Card></section>
       <section className="pageSection"><div className="sectionTitle"><div><h2>模块归因与问题定位</h2><p>按实验前后变化幅度排序 · 单位：pp</p></div></div><Card className="attributionCard"><AttributionTable items={driverItems} beforeLabel="实验前" afterLabel="实验期" /></Card></section>
       <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入本地热门实验成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>{bannerDayGap === null ? '实验期无 Banner 点击日，暂无可比拆分' : `Banner 点击日总启动较无点击日高 ${formatPp(bannerDayGap)}；仅为相关性`}</span></aside></Card></section>
-      <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>补充本地热门游戏位的明细数据。</b><span>分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。</span></li><li><b>持续定位游戏模块开始玩的下降原因。</b><span>优先检查承接游戏、排序和点击后的启动链路。</span></li></ol></section>
+      <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions">{nextSteps.map(item => <li key={item.title}><b>{item.title}</b><span>{item.detail}</span></li>)}</ol></section>
     </section>
   </>;
 }
