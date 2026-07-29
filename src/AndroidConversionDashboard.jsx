@@ -39,10 +39,10 @@ const DAILY_ROWS = [
   ['2026-07-16',612,434,80,7,5,3,0,0,89,28,128,118], ['2026-07-17',581,409,64,6,7,1,16,0,63,22,126,127],
   ['2026-07-18',651,468,93,4,8,1,13,1,98,32,114,124], ['2026-07-19',683,479,84,9,12,3,14,0,102,33,121,122],
   ['2026-07-20',650,456,79,9,9,1,0,0,78,28,109,122], ['2026-07-21',652,432,72,4,3,3,0,0,79,30,105,110],
-  ['2026-07-22',702,493,95,11,7,0,0,1,106,30,134,132], ['2026-07-23',582,397,84,5,2,0,0,1,76,23,109,108],
-  ['2026-07-24',626,439,78,8,2,0,0,1,96,31,97,115], ['2026-07-25',535,380,62,6,3,0,0,0,75,29,103,90],
-  ['2026-07-26',668,479,74,7,2,0,0,1,89,28,117,127], ['2026-07-27',585,397,80,5,6,0,0,0,93,29,119,107],
-  ['2026-07-28',527,374,83,3,0,0,0,0,76,39,80,98],
+  ['2026-07-22',702,493,95,11,11,7,0,1,106,30,134,132], ['2026-07-23',582,397,84,9,5,2,0,1,76,23,109,108],
+  ['2026-07-24',626,439,78,11,8,2,0,1,96,31,97,115], ['2026-07-25',535,380,62,11,6,3,0,0,75,29,103,90],
+  ['2026-07-26',668,479,74,13,7,2,0,1,89,28,117,127], ['2026-07-27',585,397,80,4,5,6,0,0,93,29,119,107],
+  ['2026-07-28',527,374,83,3,3,0,0,0,76,39,80,98],
 ];
 
 const daily = DAILY_ROWS.map(([date, users, ...uvs]) => ({
@@ -68,7 +68,7 @@ const EXPERIMENTS = [
   },
   {
     id: 'first-banner-material', title: '实验 3 · 首屏 Banner 素材更新', module: '首屏 Banner',
-    metricId: '60100201', content: '7 月 15 日更换首屏 Banner 素材，观察素材更新前后的点击变化。', start: '2026-07-15', end: '2026-07-21', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
+    metricId: '60100201', content: '7 月 15 日更换首屏 Banner 素材，以素材更新前后各 14 天观察点击与总启动变化。', start: '2026-07-15', end: '2026-07-28', beforeStart: '2026-07-01', beforeEnd: '2026-07-14',
   },
 ];
 
@@ -104,7 +104,7 @@ function TrendChart({ items, eventIds = [], markerDate, markerLabel }) {
       {hoveredIndex !== null && visibleSeries.length > 0 && <g className="trendTooltip" transform={`translate(${tooltipX}, 28)`}><rect width="220" height={31 + visibleSeries.length * 18} rx="6" /><text x="10" y="19" className="tooltipDate">{items[hoveredIndex].date}</text>{visibleSeries.map((series, index) => <g key={series.id} transform={`translate(10, ${37 + index * 18})`}><circle cx="4" cy="-4" r="3" style={{ fill: colors[index % colors.length] }} /><text x="13" y="0">{series.shortLabel}　{series.values[hoveredIndex].toFixed(1)}%</text></g>)}</g>}
       {!visibleSeries.length && <text className="emptyChartText" x="407" y="125" textAnchor="middle">请选择至少一个事件查看趋势</text>}
       {visibleSeries.length > 0 && items.map((item, index) => <rect className="trendHoverTarget" key={item.date} x={x(index) - 730 / Math.max(items.length - 1, 1) / 2} y="26" width={730 / Math.max(items.length - 1, 1)} height="174" onMouseEnter={() => setHoveredIndex(index)} onClick={() => setHoveredIndex(index)} />)}
-      {items.map((item, index) => <text className="axisLabel" x={x(index)} y="222" textAnchor="middle" key={item.date}>{item.label}</text>)}
+      {items.map((item, index) => (items.length <= 14 || index === 0 || index === items.length - 1 || index % 2 === 0) && <text className="axisLabel" x={x(index)} y="222" textAnchor="middle" key={item.date}>{item.label}</text>)}
     </svg>
   </div>;
 }
@@ -163,9 +163,9 @@ function ReviewPage() {
     if (event.id === '60100602') conclusion = '活动临时投放，作为环境变量单列，不与其他实验混合归因';
     return { id: event.id, label: event.shortLabel, before: beforeRate, after: afterRate, delta, conclusion };
   }).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
-  const verdict = value => Math.abs(value) < 0.1 ? '无明显变化' : value > 0 ? '正优化' : '负优化';
+  const verdict = value => Math.abs(value) < 0.2 ? '无明显变化' : value > 0 ? '正优化' : '负优化';
   const moduleVerdict = verdict(moduleDelta);
-  const startupVerdict = totalDelta > 0 ? '正优化' : totalDelta < 0 ? '负优化' : '无明显变化';
+  const startupVerdict = verdict(totalDelta);
   const candidate = driverItems.filter(item => item.id !== experiment.metricId && Math.sign(item.delta) === Math.sign(totalDelta)).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0];
   const bannerOnRows = after.rows.filter(item => item.uv['60100602'] > 0);
   const bannerOffRows = after.rows.filter(item => item.uv['60100602'] === 0);
@@ -177,7 +177,7 @@ function ReviewPage() {
     : experimentId === 'local-hot-observation'
       ? [{ title: '下一轮优先回退新增的棋牌游戏位，恢复被减少的营收游戏位。', detail: '相对 7/08–7/14 的无活动 Banner 基线，本地热门点击从 15.14% 降至 13.16%（-1.98pp）；建议用“撤掉新增棋牌位、恢复原营收位”的单变量实验验证。' }, { title: '保持按市新增排序规则不变，只调整游戏位结构。', detail: '第一轮排序优化曾带来本地热门点击提升；下一轮不要同时改排序和游戏位，以便确认是否由棋牌位替换造成下降。' }, { title: '将搜索游戏与游戏模块开始玩作为同步监控项。', detail: '本周总启动提升主要与搜索游戏点击 +1.89pp 同步，游戏模块开始玩仍下降 -1.93pp；两者均不能替代本地热门效果判断。' }]
       : experimentId === 'first-banner-material'
-        ? [{ title: '继续保留当前首屏 Banner 素材观察。', detail: '首周点击仅小幅变化，暂不能证明素材更新有效；建议再积累一周无其他大改动的数据。' }]
+        ? [{ title: '当前素材可保留，但不以其作为提升总启动的手段。', detail: '完整两周内首屏 Banner 点击提升约 +0.23pp，但总启动仅 -0.11pp、无明显变化；素材对点击有正向信号，尚未证明能带动 KPI。' }, { title: '下一轮使用固定流量做素材 A/B。', detail: '将新旧素材同时分流，控制活动 Banner 等环境变量，并以首屏点击与总启动作为共同判定指标。' }]
         : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
   return <>
     <header className="pageIntro"><div><h1>实验复盘</h1><p>按实验区间切换查看 · 总启动＝用户启动＋本地包相关点击</p></div><span>固定实验口径</span></header>
