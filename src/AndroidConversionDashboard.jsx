@@ -64,7 +64,7 @@ const EXPERIMENTS = [
   },
   {
     id: 'local-hot-observation', title: '观察期 · 本地热门保持当前规则', module: '本地热门',
-    metricId: '60100102', content: '本周未调整本地热门规则；由于上周活动 Banner 投放影响，观察活动 Banner 停投后当前规则下的数据变化。', start: '2026-07-22', end: '2026-07-28', beforeStart: '2026-07-15', beforeEnd: '2026-07-21',
+    metricId: '60100102', content: '本周未调整本地热门规则；由于上周活动 Banner 投放影响，以 7/08–7/14 的无活动 Banner 周为基线，观察当前规则下的数据变化。', start: '2026-07-22', end: '2026-07-28', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
   },
   {
     id: 'first-banner-material', title: '实验 3 · 首屏 Banner 素材更新', module: '首屏 Banner',
@@ -171,11 +171,11 @@ function ReviewPage() {
   const bannerOffRows = after.rows.filter(item => item.uv['60100602'] === 0);
   const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
-  const trendItems = daily.filter(item => item.date >= experiment.beforeStart && item.date <= experiment.end);
+  const trendItems = [...before.rows, ...after.rows];
   const nextSteps = experimentId === 'local-hot-v2'
     ? [{ title: '继续按当前规则观察一周数据变化。', detail: '活动 Banner 的投放会影响本地热门点击效果，需要先排除该环境变量后再判断实验结果。' }]
     : experimentId === 'local-hot-observation'
-      ? [{ title: '保持当前本地热门规则，再观察一周。', detail: '本周活动 Banner 已停投，本地热门点击较上周回升；仍需更多无活动干扰周期判断稳定性。' }, { title: '优先跟踪搜索游戏与游戏模块开始玩。', detail: '搜索游戏点击提升明显、游戏模块开始玩仍下降，二者是总启动变化的重要同步线索。' }]
+      ? [{ title: '下一轮优先回退新增的棋牌游戏位，恢复被减少的营收游戏位。', detail: '相对 7/08–7/14 的无活动 Banner 基线，本地热门点击从 15.14% 降至 13.16%（-1.98pp）；建议用“撤掉新增棋牌位、恢复原营收位”的单变量实验验证。' }, { title: '保持按市新增排序规则不变，只调整游戏位结构。', detail: '第一轮排序优化曾带来本地热门点击提升；下一轮不要同时改排序和游戏位，以便确认是否由棋牌位替换造成下降。' }, { title: '将搜索游戏与游戏模块开始玩作为同步监控项。', detail: '本周总启动提升主要与搜索游戏点击 +1.89pp 同步，游戏模块开始玩仍下降 -1.93pp；两者均不能替代本地热门效果判断。' }]
       : experimentId === 'first-banner-material'
         ? [{ title: '继续保留当前首屏 Banner 素材观察。', detail: '首周点击仅小幅变化，暂不能证明素材更新有效；建议再积累一周无其他大改动的数据。' }]
         : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
@@ -189,7 +189,7 @@ function ReviewPage() {
       <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>保留本次对比的实验前后区间 · 虚线为实验/观察开始</p></div></div><Card className="chartCard"><TrendChart items={trendItems} eventIds={['TOTAL_START', experiment.metricId]} markerDate={experiment.start} markerLabel={`${formatDate(experiment.start)} ${experimentId === 'local-hot-observation' ? '观察开始' : '实验上线'}`} /></Card></section>
       <section className="pageSection"><div className="sectionTitle"><div><h2>模块归因与问题定位</h2><p>按实验前后变化幅度排序 · 单位：pp</p></div></div><Card className="attributionCard"><AttributionTable items={driverItems} beforeLabel="实验前" afterLabel="实验期" /></Card></section>
       <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入其他实验模块成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>{bannerDayGap === null ? '实验期无 Banner 点击日，暂无可比拆分' : `Banner 点击日总启动较无点击日高 ${formatPp(bannerDayGap)}；仅为相关性`}</span></aside></Card></section>
-      <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions">{nextSteps.map(item => <li key={item.title}><b>{item.title}</b><span>{item.detail}</span></li>)}</ol></section>
+      <section className="pageSection"><div className="sectionTitle"><div><h2>{experimentId === 'local-hot-observation' ? '后续本地热门优化建议' : '下一步'}</h2></div></div><ol className="reviewActions">{nextSteps.map(item => <li key={item.title}><b>{item.title}</b><span>{item.detail}</span></li>)}</ol></section>
     </section>
   </>;
 }
