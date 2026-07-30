@@ -157,18 +157,16 @@ function GlobalDataPage() {
   </>;
 }
 
-function TargetGameTrendChart() {
+function TargetGameTrendChart({ platform }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const series = [
-    { id: 'pc', label: 'PC 新大厅老用户', color: '#2c6dbe', values: TARGET_GAME_MONTHS.map(item => item.pc.total) },
-    { id: 'android', label: '安卓活跃用户', color: '#c77d18', values: TARGET_GAME_MONTHS.map(item => item.android.total) },
-  ];
+  const isPc = platform === 'pc';
+  const series = [{ id: platform, label: isPc ? 'PC 新大厅老用户' : '安卓活跃用户', color: isPc ? '#2c6dbe' : '#c77d18', values: TARGET_GAME_MONTHS.map(item => item[platform].total) }];
   const values = series.flatMap(item => item.values); const low = Math.min(...values); const high = Math.max(...values);
   const span = Math.max(high - low, 5); const bounds = { min: low - span * .14, max: high + span * .14 };
   const x = index => 42 + index * (730 / Math.max(TARGET_GAME_MONTHS.length - 1, 1));
   const y = value => 190 - ((value - bounds.min) / (bounds.max - bounds.min)) * 142;
   const tooltipX = hoveredIndex === null ? 0 : Math.min(x(hoveredIndex) + 12, 570);
-  return <div className="astryxTrend" role="img" aria-label="PC 与安卓活跃用户进入目标游戏转化率月度趋势">
+  return <div className="astryxTrend" role="img" aria-label={`${isPc ? 'PC 新大厅老用户' : '安卓活跃用户'}分发数据月度趋势`}>
     <div className="trendLegend">{series.map(item => <span key={item.id}><i style={{ borderColor: item.color }} />{item.label}</span>)}</div>
     <svg viewBox="0 0 800 230" onMouseLeave={() => setHoveredIndex(null)}>
       {[44, 82, 120, 158, 196].map((lineY, index) => <g key={lineY}><line x1="42" x2="772" y1={lineY} y2={lineY} /><text x="4" y={lineY + 4}>{(bounds.max - index * (bounds.max - bounds.min) / 4).toFixed(0)}%</text></g>)}
@@ -181,23 +179,27 @@ function TargetGameTrendChart() {
   </div>;
 }
 
-function TargetGameTable() {
-  return <div className="targetGameTable" role="table" aria-label="活跃用户进入目标游戏月度明细">
-    <div className="targetGameHead" role="row"><span>月份</span><span>PC 目标游戏</span><span>PC 棋牌游戏</span><span>PC 联运创角</span><span>安卓目标游戏</span><span>安卓棋牌游戏</span><span>安卓联运创角</span></div>
-    {TARGET_GAME_MONTHS.map(item => <div className="targetGameRow" role="row" key={item.label}><strong>{item.label}</strong><span>{item.pc.total.toFixed(2)}%</span><span>{item.pc.game.toFixed(2)}%</span><span>{item.pc.union.toFixed(2)}%</span><span>{item.android.total.toFixed(2)}%</span><span>{item.android.game.toFixed(2)}%</span><span>{item.android.union.toFixed(2)}%</span></div>)}
+function TargetGameTable({ platform }) {
+  const isPc = platform === 'pc';
+  return <div className="targetGameTable targetGameTableSingle" role="table" aria-label={`${isPc ? 'PC' : '安卓'}活跃用户分发数据月度明细`}>
+    <div className="targetGameHead" role="row"><span>月份</span><span>进入营收游戏</span><span>营收棋牌游戏</span><span>联运创角</span></div>
+    {TARGET_GAME_MONTHS.map(item => <div className="targetGameRow" role="row" key={item.label}><strong>{item.label}</strong><span>{item[platform].total.toFixed(2)}%</span><span>{item[platform].game.toFixed(2)}%</span><span>{item[platform].union.toFixed(2)}%</span></div>)}
   </div>;
 }
 
-function TargetGamePage() {
+function TargetGamePage({ platform }) {
+  const isPc = platform === 'pc';
+  const name = isPc ? 'PC 新大厅老用户' : '安卓活跃用户';
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
-  const pcChange = latest.pc.total - first.pc.total; const androidChange = latest.android.total - first.android.total;
-  const pcMonthChange = latest.pc.total - previous.pc.total; const androidMonthChange = latest.android.total - previous.android.total;
+  const change = latest[platform].total - first[platform].total;
+  const monthChange = latest[platform].total - previous[platform].total;
+  const conclusion = isPc ? '1–5 月基本稳定在 22% 左右，6 月升至 23.23%，7 月进一步升至 25.75%，7 月环比 +2.53pp，是全周期最明显的上行。' : '从 1 月 39.18% 整体提升至 7 月 41.19%，4 月后连续走高；7 月环比 +0.22pp，增长趋缓但仍处于年内高位。';
   return <>
-    <header className="pageIntro"><div><h1>活跃用户目标游戏</h1><p>PC 新大厅老用户与安卓活跃用户 · 进入营收目标游戏 KPI</p></div><span>数据更新至 2026/07/29</span></header>
-    <div className="targetMetrics"><Metric label="PC 7月目标游戏转化率" value={`${latest.pc.total.toFixed(2)}%`} helper={`较 6 月 ${formatPp(pcMonthChange)} · ${latest.pc.users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label="安卓 7月目标游戏转化率" value={`${latest.android.total.toFixed(2)}%`} helper={`较 6 月 ${formatPp(androidMonthChange)} · ${latest.android.users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label="PC 1–7月变化" value={formatPp(pcChange)} helper={`${first.pc.total.toFixed(2)}% → ${latest.pc.total.toFixed(2)}% · 主要来自棋牌游戏`} tone="positive" icon={BarChart3} /><Metric label="安卓 1–7月变化" value={formatPp(androidChange)} helper={`${first.android.total.toFixed(2)}% → ${latest.android.total.toFixed(2)}% · 主要来自棋牌游戏`} tone="positive" icon={BarChart3} /></div>
-    <div className="targetConclusion"><b>1–7 月走势结论</b><p><strong>PC：</strong>1–5 月基本稳定在 22% 左右，6 月升至 23.23%，7 月进一步升至 25.75%，7 月环比 +2.53pp，是全周期最明显的上行。</p><p><strong>安卓：</strong>从 1 月 39.18% 整体提升至 7 月 41.19%，4 月后连续走高；7 月环比 +0.22pp，增长趋缓但仍处于年内高位。</p><p>两端的主要变化均来自<strong>营收棋牌游戏</strong>转化率；联运创角占比低，暂不是总 KPI 的主要驱动。当前数据只能说明同步走势，未包含版本、城市或游戏位明细，不能直接判定具体策略的因果效果。</p></div>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>目标游戏转化率趋势</h2><p>按月汇总：当月进入目标游戏 UV / 当月用户池 UV</p></div></div><Card className="chartCard"><TargetGameTrendChart /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>月度 KPI 明细</h2><p>目标游戏转化率＝营收棋牌游戏＋联运创角</p></div></div><Card className="targetGameCard"><TargetGameTable /></Card></section>
+    <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/07/29</span></header>
+    <div className="targetMetrics"><Metric label="7 月进入营收游戏占比" value={`${latest[platform].total.toFixed(2)}%`} helper={`较 6 月 ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label="1–7 月变化" value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label="7 月营收棋牌游戏占比" value={`${latest[platform].game.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label="7 月联运创角占比" value={`${latest[platform].union.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
+    <div className="targetConclusion"><b>1–7 月走势结论</b><p>{conclusion}</p><p>主要变化来自<strong>营收棋牌游戏</strong>；联运创角占比低，暂不是进入营收游戏占比的主要驱动。当前数据只能说明同步走势，未包含版本、城市或游戏位明细，不能直接判定具体策略的因果效果。</p></div>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>进入营收游戏趋势</h2><p>按月汇总：当月进入营收游戏 UV / 当月用户池 UV</p></div></div><Card className="chartCard"><TargetGameTrendChart platform={platform} /></Card></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>月度分发明细</h2><p>进入营收游戏占比由营收棋牌游戏与联运创角构成</p></div></div><Card className="targetGameCard"><TargetGameTable platform={platform} /></Card></section>
   </>;
 }
 
@@ -251,7 +253,8 @@ function ReviewPage() {
 
 function ConversionDashboard() {
   const [page, setPage] = useState('global');
-  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light"><aside className="reportNav"><div className="reportBrand"><span>游戏大厅分发</span><small>用户分发数据分析</small></div><nav aria-label="报告导航"><button className={page === 'global' ? 'selected' : ''} onClick={() => setPage('global')}><BarChart3 />全局数据</button><button className={page === 'review' ? 'selected' : ''} onClick={() => setPage('review')}><FileSearch />实验复盘</button><button className={page === 'target-game' ? 'selected' : ''} onClick={() => setPage('target-game')}><TrendingUp />目标游戏 KPI</button></nav><p>数据由人工补充<br />更新后生成本地报告</p></aside><main className="reportMain"><div className="reportContent">{page === 'global' ? <GlobalDataPage /> : page === 'review' ? <ReviewPage /> : <TargetGamePage />}</div></main></div>;
+  const activeGroup = ['global', 'review'].includes(page) ? 'new' : 'active';
+  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light"><aside className="reportNav"><div className="reportBrand"><span>平台分发效果看板</span><small>用户分发数据分析</small></div><nav aria-label="报告导航"><button className={`navGroup ${activeGroup === 'new' ? 'selected' : ''}`} onClick={() => setPage('global')}><BarChart3 />新用户分发</button>{activeGroup === 'new' && <div className="navChildren"><button className={page === 'global' ? 'selected' : ''} onClick={() => setPage('global')}>全局数据</button><button className={page === 'review' ? 'selected' : ''} onClick={() => setPage('review')}>实验复盘</button></div>}<button className={`navGroup ${activeGroup === 'active' ? 'selected' : ''}`} onClick={() => setPage('pc-distribution')}><TrendingUp />活跃用户分发</button>{activeGroup === 'active' && <div className="navChildren"><button className={page === 'pc-distribution' ? 'selected' : ''} onClick={() => setPage('pc-distribution')}>PC 活跃用户分发数据</button><button className={page === 'android-distribution' ? 'selected' : ''} onClick={() => setPage('android-distribution')}>安卓活跃用户分发数据</button></div>}</nav><p>数据由人工补充<br />更新后生成本地报告</p></aside><main className="reportMain"><div className="reportContent">{page === 'global' ? <GlobalDataPage /> : page === 'review' ? <ReviewPage /> : <TargetGamePage platform={page === 'pc-distribution' ? 'pc' : 'android'} />}</div></main></div>;
 }
 
 export default ConversionDashboard;
