@@ -197,7 +197,7 @@ function TargetGameTable({ platform }) {
 
 function AndroidActiveExperimentReview() {
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地热门实验复盘</h2><p>安卓活跃用户 · 每周三开始一个实验周期</p></div></div>
-    <Card className="experimentBrief activeUserExperiment"><div><span>实验周期</span><b>第一轮 · 8/5–8/11</b><small>实验前对比：7/29–8/4</small></div><div><span>实验模块</span><b>本地热门</b></div><div><span>实验内容</span><b>减少 1 个棋牌游戏位，增加 1 个营收游戏位。</b></div></Card>
+    <Card className="experimentBrief activeUserExperiment"><div><span>实验周期</span><b>第一轮 · 8/5–8/11</b><small>实验前对比：7/29–8/4</small></div><div><span>实验模块</span><b>本地热门</b></div><div><span>实验内容</span><b>营收游戏从第 4、5 位前移至第 3、4 位，第 5 位由棋牌游戏补位；即营收游戏整体前移一位，棋牌游戏向后补一位。</b></div></Card>
     <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value="7/29–8/4" helper="下一轮复盘的对比区间" icon={BarChart3} /><Metric label="实验周期" value="8/5–8/11" helper="每周三开始，连续观察 7 天" icon={CalendarDays} /><Metric label="数据变化" value="待补充" helper="实验满周期后计算进入营收游戏占比变化" tone="neutral" icon={TrendingUp} /></div>
     <div className="reviewCallout activeUserCallout"><b>当前状态：实验进行中</b><p>本轮于 8 月 5 日开始，待满 7 天后再与实验前一周对比进入营收游戏占比、营收棋牌游戏占比和联运创角占比；预计 8 月 12 日补充复盘结论。</p></div>
   </section>;
