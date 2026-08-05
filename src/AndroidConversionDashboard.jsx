@@ -67,16 +67,16 @@ const EXPERIMENTS = [
     metricId: '60100102', content: '调整新用户看到的本地热门展示：增加 1 个棋牌游戏位，减少 1 个营收游戏位置。', start: '2026-07-15', end: '2026-07-21', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
   },
   {
+    id: 'first-banner-material', title: '实验 3 · 首屏 Banner 素材更新', module: '首屏 Banner',
+    metricId: '60100201', content: '7 月 15 日更换首屏 Banner 素材，以素材更新前后各 14 天观察点击与总启动变化。', start: '2026-07-15', end: '2026-07-28', beforeStart: '2026-07-01', beforeEnd: '2026-07-14',
+  },
+  {
     id: 'local-hot-observation', title: '观察期 · 本地热门保持当前规则', module: '本地热门',
     metricId: '60100102', content: '本周未调整本地热门规则；由于上周活动 Banner 投放影响，以 7/08–7/14 的无活动 Banner 周为基线，观察当前规则下的数据变化。', start: '2026-07-22', end: '2026-07-28', beforeStart: '2026-07-08', beforeEnd: '2026-07-14',
   },
   {
     id: 'local-hot-waiting-package', title: '最新观察周 · 等待本地包版本更新', module: '本地热门',
     metricId: '60100102', content: '本周未调整本地热门；等待产品本地包版本更新，预计 8 月 10 日上线后再观察更明显的数据变化。', start: '2026-07-29', end: '2026-08-04', beforeStart: '2026-07-22', beforeEnd: '2026-07-28',
-  },
-  {
-    id: 'first-banner-material', title: '实验 3 · 首屏 Banner 素材更新', module: '首屏 Banner',
-    metricId: '60100201', content: '7 月 15 日更换首屏 Banner 素材，以素材更新前后各 14 天观察点击与总启动变化。', start: '2026-07-15', end: '2026-07-28', beforeStart: '2026-07-01', beforeEnd: '2026-07-14',
   },
 ];
 
@@ -198,12 +198,14 @@ function TargetGameTable({ platform }) {
 function AndroidActiveExperimentReview() {
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地热门实验复盘</h2><p>安卓活跃用户 · 每周三开始一个实验周期</p></div></div>
     <Card className="experimentBrief activeUserExperiment"><div><span>实验周期</span><b>第一轮 · 8/5–8/11</b><small>实验前对比：7/29–8/4</small></div><div><span>实验模块</span><b>本地热门</b></div><div><span>实验内容</span><b>减少 1 个棋牌游戏位，增加 1 个营收游戏位。</b></div></Card>
+    <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value="7/29–8/4" helper="下一轮复盘的对比区间" icon={BarChart3} /><Metric label="实验周期" value="8/5–8/11" helper="每周三开始，连续观察 7 天" icon={CalendarDays} /><Metric label="数据变化" value="待补充" helper="实验满周期后计算进入营收游戏占比变化" tone="neutral" icon={TrendingUp} /></div>
     <div className="reviewCallout activeUserCallout"><b>当前状态：实验进行中</b><p>本轮于 8 月 5 日开始，待满 7 天后再与实验前一周对比进入营收游戏占比、营收棋牌游戏占比和联运创角占比；预计 8 月 12 日补充复盘结论。</p></div>
   </section>;
 }
 
 function TargetGamePage({ platform }) {
   const isPc = platform === 'pc';
+  const [androidTab, setAndroidTab] = useState('overview');
   const name = isPc ? 'PC 新大厅老用户' : '安卓活跃用户';
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
   const change = latest[platform].total - first[platform].total;
@@ -211,11 +213,11 @@ function TargetGamePage({ platform }) {
   const conclusion = isPc ? '1–5 月基本稳定在 22% 左右，6 月升至 23.23%，7 月进一步升至 25.62%，7 月环比 +2.39pp，是全周期最明显的上行。' : '从 1 月 39.18% 整体提升至 7 月 41.24%，4 月后连续走高；7 月环比 +0.27pp，仍处于年内高位。';
   return <>
     <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/08/04</span></header>
-    <div className="targetMetrics"><Metric label="7 月进入营收游戏占比" value={`${latest[platform].total.toFixed(2)}%`} helper={`较 6 月 ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label="1–7 月变化" value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label="7 月营收棋牌游戏占比" value={`${latest[platform].game.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label="7 月联运创角占比" value={`${latest[platform].union.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
+    {!isPc && <div className="activeDistributionTabs" role="tablist" aria-label="安卓活跃用户分发页签"><button role="tab" aria-selected={androidTab === 'overview'} className={androidTab === 'overview' ? 'selected' : ''} onClick={() => setAndroidTab('overview')}>整体数据</button><button role="tab" aria-selected={androidTab === 'review'} className={androidTab === 'review' ? 'selected' : ''} onClick={() => setAndroidTab('review')}>实验复盘</button></div>}
+    {(isPc || androidTab === 'overview') ? <><div className="targetMetrics"><Metric label="7 月进入营收游戏占比" value={`${latest[platform].total.toFixed(2)}%`} helper={`较 6 月 ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label="1–7 月变化" value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label="7 月营收棋牌游戏占比" value={`${latest[platform].game.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label="7 月联运创角占比" value={`${latest[platform].union.toFixed(2)}%`} helper={`较 6 月 ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
     <div className="targetConclusion"><b>1–7 月走势结论</b><p>{conclusion}</p><p>主要变化来自<strong>营收棋牌游戏</strong>；联运创角占比低，暂不是进入营收游戏占比的主要驱动。当前数据只能说明同步走势，未包含版本、城市或游戏位明细，不能直接判定具体策略的因果效果。</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>进入营收游戏趋势</h2><p>按月汇总：当月进入营收游戏 UV / 当月用户池 UV</p></div></div><Card className="chartCard"><TargetGameTrendChart platform={platform} /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>月度分发明细</h2><p>进入营收游戏占比由营收棋牌游戏与联运创角构成</p></div></div><Card className="targetGameCard"><TargetGameTable platform={platform} /></Card></section>
-    {!isPc && <AndroidActiveExperimentReview />}
+    <section className="pageSection"><div className="sectionTitle"><div><h2>月度分发明细</h2><p>进入营收游戏占比由营收棋牌游戏与联运创角构成</p></div></div><Card className="targetGameCard"><TargetGameTable platform={platform} /></Card></section></> : <AndroidActiveExperimentReview />}
   </>;
 }
 
