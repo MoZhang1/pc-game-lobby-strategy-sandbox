@@ -123,9 +123,10 @@ const TARGET_GAME_MONTHS = [
 ];
 
 const ACTIVE_EXPERIMENT_DAILY = [
+  { date: '2026-07-29', label: '7/29', total: 41.854 }, { date: '2026-07-30', label: '7/30', total: 41.820 }, { date: '2026-07-31', label: '7/31', total: 42.094 }, { date: '2026-08-01', label: '8/1', total: 42.362 }, { date: '2026-08-02', label: '8/2', total: 42.168 }, { date: '2026-08-03', label: '8/3', total: 42.046 }, { date: '2026-08-04', label: '8/4', total: 41.852 },
   ['2026-08-05',184423,77673,444,78001], ['2026-08-06',184409,77604,595,78033], ['2026-08-07',183060,77234,590,77674], ['2026-08-08',182584,77749,345,77981], ['2026-08-09',184082,78461,547,78865], ['2026-08-10',184537,78793,383,79078], ['2026-08-11',184620,78528,409,78830],
   ['2026-08-12',185143,78714,527,79093], ['2026-08-13',183763,78514,390,78799], ['2026-08-14',183076,77330,319,77561], ['2026-08-15',181932,76998,241,77180], ['2026-08-16',181964,77206,217,77352], ['2026-08-17',180787,75562,250,75754], ['2026-08-18',182224,77282,221,77449],
-].map(([date, users, chess, union, total]) => ({ date, label: `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`, users, chess: chess / users * 100, union: union / users * 100, total: total / users * 100 }));
+].map(item => Array.isArray(item) ? (() => { const [date, users, chess, union, total] = item; return { date, label: `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`, users, chess: chess / users * 100, union: union / users * 100, total: total / users * 100 }; })() : item);
 
 function getSummary(start, end) {
   const rows = daily.filter(item => item.date >= start && item.date <= end);
