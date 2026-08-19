@@ -184,17 +184,17 @@ function GlobalEventTable() {
   </div>;
 }
 
-function GlobalDataPage() {
+function GlobalDataPage({ embedded = false }) {
   const [range, setRange] = useState({ start: '2026-06-20', end: '2026-08-18' });
   const [appliedRange, setAppliedRange] = useState(range);
-  const [eventIds, setEventIds] = useState(['TOTAL_START', '60100102']);
+  const [eventIds, setEventIds] = useState(['TOTAL_START']);
   const selected = useMemo(() => daily.filter(item => item.date >= appliedRange.start && item.date <= appliedRange.end), [appliedRange]);
   const summary = getSummary(appliedRange.start, appliedRange.end);
   const selectedEvent = eventIds.length === 1 ? eventSeries[eventIds[0]] : null;
   const toggleEvent = id => setEventIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const period = `${formatDate(appliedRange.start)}–${formatDate(appliedRange.end)}`;
   return <>
-    <header className="pageIntro"><div><h1>全局数据</h1><p>安卓纯新增用户 · 总启动与模块点击总览</p></div><span>数据更新至 2026/08/18</span></header>
+    {!embedded && <header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>总启动与模块点击总览</p></div><span>数据更新至 2026/08/18</span></header>}
     <Card className="filterCard"><div className="filterCopy"><CalendarDays /><div><b>数据日期</b><span>模块数据有效起始 6/20；7/15 起本地包点击单列展示</span></div></div><DateRangeInput label="数据日期" isLabelHidden value={range} onChange={value => value && setRange(value)} min="2026-06-20" max="2026-08-18" numberOfMonths={1} /><Button label="应用筛选" variant="primary" onClick={() => setAppliedRange(range)} /></Card>
     <div className="globalMetrics"><Metric label="期间总启动占比" value={`${summary.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${summary.stats.TOTAL_START.uv.toLocaleString()} / ${summary.users.toLocaleString()} · ${period}`} icon={BarChart3} /><Metric label="趋势已选事件" value={eventIds.length ? `${eventIds.length} 项` : '未选择'} helper={selectedEvent ? selectedEvent.label : '支持多选或全部取消'} tone="positive" icon={TrendingUp} /><Metric label="纯新增用户数" value={summary.users.toLocaleString()} helper={`${selected.length} 天 · 模块数据起始 6/20`} icon={FileSearch} /></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>事件趋势</h2><p>{period} · 多事件共用占比纵轴</p></div><details className="eventPicker"><summary>筛选事件 <b>{eventIds.length ? `已选 ${eventIds.length} 项` : '未选择'}</b></summary><div>{EVENTS.map(event => <label key={event.id}><input type="checkbox" checked={eventIds.includes(event.id)} onChange={() => toggleEvent(event.id)} />{event.label}</label>)}</div></details></div><Card className="chartCard"><TrendChart items={selected} eventIds={eventIds} /></Card></section>
@@ -224,12 +224,17 @@ function TargetGameTrendChart({ platform }) {
   </div>;
 }
 
-function ActiveExperimentTrendChart() {
+const ACTIVE_EXPERIMENTS = [
+  { id: 'active-local-hot-v1', title: '第一轮 · 营收游戏前移', start: '2026-08-05', end: '2026-08-11', baseline: '7/29–8/4', baselineRate: 42.03, baselineHelper: '541,897 / 1,289,395', resultRate: 42.59, resultHelper: '548,462 / 1,287,715', delta: 0.56, content: '营收游戏从第 4、5 位前移至第 3、4 位，第 5 位由棋牌游戏补位；即营收游戏整体前移一位，棋牌游戏向后补一位。', conclusion: '正向。进入营收游戏占比提升 0.56pp，主要来自营收棋牌游戏提升 0.53pp。', next: '保留营收游戏第 3、4 位，继续验证第 5 位替换方案。' },
+  { id: 'active-local-hot-v2', title: '第二轮 · 第 5 位改联运游戏', start: '2026-08-12', end: '2026-08-18', baseline: '8/5–8/11', baselineRate: 42.59, baselineHelper: '548,462 / 1,287,715', resultRate: 42.47, resultHelper: '543,188 / 1,278,889', delta: -0.12, content: '保持营收游戏在第 3、4 位不变，将第 5 位从棋牌游戏替换为联运游戏。', conclusion: '轻微负向。营收棋牌游戏 -0.05pp、联运创角 -0.09pp，未补足第 5 位替换带来的损失。', next: '第 5 位回退为棋牌游戏后，按同口径再观察一周。' },
+];
+
+function ActiveExperimentTrendChart({ items }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const series = [{ label: '变现率（进入营收游戏）', color: '#c77d18', values: ACTIVE_EXPERIMENT_DAILY.map(item => item.total) }];
+  const series = [{ label: '变现率（进入营收游戏）', color: '#c77d18', values: items.map(item => item.total) }];
   const values = series.flatMap(item => item.values); const low = Math.min(...values); const high = Math.max(...values); const span = Math.max(high - low, 1); const bounds = { min: low - span * .18, max: high + span * .18 };
-  const x = index => 42 + index * (730 / Math.max(ACTIVE_EXPERIMENT_DAILY.length - 1, 1)); const y = value => 190 - ((value - bounds.min) / (bounds.max - bounds.min)) * 142; const markerIndex = ACTIVE_EXPERIMENT_DAILY.findIndex(item => item.date === '2026-08-12'); const tooltipX = hoveredIndex === null ? 0 : Math.min(x(hoveredIndex) + 12, 570);
-  return <div className="astryxTrend" role="img" aria-label="安卓活跃用户本地热门实验前后趋势"><div className="trendLegend">{series.map(item => <span key={item.label}><i style={{ borderColor: item.color }} />{item.label}</span>)}</div><svg viewBox="0 0 800 230" onMouseLeave={() => setHoveredIndex(null)}>{[44,82,120,158,196].map((lineY, index) => <g key={lineY}><line x1="42" x2="772" y1={lineY} y2={lineY} /><text x="4" y={lineY + 4}>{(bounds.max - index * (bounds.max - bounds.min) / 4).toFixed(1)}%</text></g>)}{markerIndex >= 0 && <g><line className="optimiseMarker" x1={x(markerIndex)} x2={x(markerIndex)} y1="28" y2="198" /><text className="optimiseLabel" x={x(markerIndex) + 7} y="39">8/12 实验开始</text></g>}{series.map(item => <polyline key={item.label} className="eventSeriesLine" style={{ stroke: item.color }} points={item.values.map((value, index) => `${x(index)},${y(value)}`).join(' ')} />)}{hoveredIndex !== null && <g className="trendTooltip" transform={`translate(${tooltipX}, 28)`}><rect width="220" height="67" rx="6" /><text x="10" y="19" className="tooltipDate">{ACTIVE_EXPERIMENT_DAILY[hoveredIndex].date}</text>{series.map((item, index) => <g key={item.label} transform={`translate(10, ${37 + index * 18})`}><circle cx="4" cy="-4" r="3" style={{ fill: item.color }} /><text x="13" y="0">{item.label}　{item.values[hoveredIndex].toFixed(2)}%</text></g>)}</g>}{ACTIVE_EXPERIMENT_DAILY.map((item, index) => <rect className="trendHoverTarget" key={item.date} x={x(index) - 730 / Math.max(ACTIVE_EXPERIMENT_DAILY.length - 1, 1) / 2} y="26" width={730 / Math.max(ACTIVE_EXPERIMENT_DAILY.length - 1, 1)} height="174" onMouseEnter={() => setHoveredIndex(index)} onClick={() => setHoveredIndex(index)} />)}{ACTIVE_EXPERIMENT_DAILY.map((item, index) => (index === 0 || index === ACTIVE_EXPERIMENT_DAILY.length - 1 || index % 2 === 0) && <text className="axisLabel" x={x(index)} y="222" textAnchor="middle" key={item.date}>{item.label}</text>)}</svg></div>;
+  const x = index => 42 + index * (730 / Math.max(items.length - 1, 1)); const y = value => 190 - ((value - bounds.min) / (bounds.max - bounds.min)) * 142; const tooltipX = hoveredIndex === null ? 0 : Math.min(x(hoveredIndex) + 12, 570);
+  return <div className="astryxTrend" role="img" aria-label="安卓活跃用户本地热门实验周期趋势"><div className="trendLegend">{series.map(item => <span key={item.label}><i style={{ borderColor: item.color }} />{item.label}</span>)}</div><svg viewBox="0 0 800 230" onMouseLeave={() => setHoveredIndex(null)}>{[44,82,120,158,196].map((lineY, index) => <g key={lineY}><line x1="42" x2="772" y1={lineY} y2={lineY} /><text x="4" y={lineY + 4}>{(bounds.max - index * (bounds.max - bounds.min) / 4).toFixed(1)}%</text></g>)}{series.map(item => <polyline key={item.label} className="eventSeriesLine" style={{ stroke: item.color }} points={item.values.map((value, index) => `${x(index)},${y(value)}`).join(' ')} />)}{hoveredIndex !== null && <g className="trendTooltip" transform={`translate(${tooltipX}, 28)`}><rect width="220" height="67" rx="6" /><text x="10" y="19" className="tooltipDate">{items[hoveredIndex].date}</text>{series.map((item, index) => <g key={item.label} transform={`translate(10, ${37 + index * 18})`}><circle cx="4" cy="-4" r="3" style={{ fill: item.color }} /><text x="13" y="0">{item.label}　{item.values[hoveredIndex].toFixed(2)}%</text></g>)}</g>}{items.map((item, index) => <rect className="trendHoverTarget" key={item.date} x={x(index) - 730 / Math.max(items.length - 1, 1) / 2} y="26" width={730 / Math.max(items.length - 1, 1)} height="174" onMouseEnter={() => setHoveredIndex(index)} onClick={() => setHoveredIndex(index)} />)}{items.map((item, index) => <text className="axisLabel" x={x(index)} y="222" textAnchor="middle" key={item.date}>{item.label}</text>)}</svg></div>;
 }
 
 function TargetGameTable({ platform }) {
@@ -241,12 +246,17 @@ function TargetGameTable({ platform }) {
 }
 
 function AndroidActiveExperimentReview() {
+  const [experimentId, setExperimentId] = useState('active-local-hot-v2');
+  const experiment = ACTIVE_EXPERIMENTS.find(item => item.id === experimentId);
+  const periodItems = ACTIVE_EXPERIMENT_DAILY.filter(item => item.date >= experiment.start && item.date <= experiment.end);
+  const tone = experiment.delta >= 0 ? 'positive' : 'negative';
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地热门实验复盘</h2><p>安卓活跃用户 · 每周三开始一个实验周期</p></div></div>
-    <Card className="experimentBrief activeUserExperiment"><div><span>实验周期</span><b>第二轮 · 8/12–8/18</b><small>实验前对比：第一轮 8/5–8/11</small></div><div><span>实验模块</span><b>本地热门</b></div><div><span>实验内容</span><b>保持营收游戏在第 3、4 位不变，将第 5 位从棋牌游戏替换为联运游戏。</b></div></Card>
-    <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value="42.59%" helper="8/5–8/11 · 548,462 / 1,287,715" icon={BarChart3} /><Metric label="实验期结果" value="42.47%" helper="8/12–8/18 · 543,188 / 1,278,889" tone="negative" icon={TrendingDown} /><Metric label="实验变化" value="-0.12pp" helper="营收棋牌游戏 -0.05pp；联运创角 -0.09pp" tone="negative" icon={TrendingDown} /></div>
-    <div className="reviewCallout activeUserCallout"><b>本轮结论：轻微负向</b><p>第 5 位替换为联运游戏后，进入营收游戏占比从 42.59% 降至 42.47%（-0.12pp）。营收棋牌游戏与联运创角均未补足：前者 -0.05pp，后者 -0.09pp。</p><p>两周期用户池接近（-0.69%）。当前数据不支持将第 5 位联运游戏作为正向方案，建议回退为棋牌游戏后再观察一周。</p></div>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>8/5–8/11 为实验前，8/12–8/18 为实验期；虚线为实验开始</p></div></div><Card className="chartCard"><ActiveExperimentTrendChart /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>后续建议</h2><p>按周三开始，观察 7 天</p></div></div><ol className="reviewActions"><li><b>第 5 位回退为棋牌游戏。</b><span>保持第 3、4 位营收游戏不变，验证第一轮的正向结果是否可复现；回退后再按同口径观察一周。</span></li></ol></section>
+    <Card className="experimentSelector"><div><b>选择实验区间</b><span>每个区间仅展示该轮实验周期内的日趋势</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择活跃用户实验区间">{ACTIVE_EXPERIMENTS.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
+    <section className="experimentBlock"><Card className="experimentBrief activeUserExperiment"><div><span>实验周期</span><b>{experiment.title} · {formatDate(experiment.start)}–{formatDate(experiment.end)}</b><small>实验前对比：{experiment.baseline}</small></div><div><span>实验模块</span><b>本地热门</b></div><div><span>实验内容</span><b>{experiment.content}</b></div></Card>
+    <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value={`${experiment.baselineRate.toFixed(2)}%`} helper={`${experiment.baseline} · ${experiment.baselineHelper}`} icon={BarChart3} /><Metric label="实验期结果" value={`${experiment.resultRate.toFixed(2)}%`} helper={`${formatDate(experiment.start)}–${formatDate(experiment.end)} · ${experiment.resultHelper}`} tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验变化" value={formatPp(experiment.delta)} helper="变现率（进入营收游戏）" tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /></div>
+    <div className="reviewCallout activeUserCallout"><b>本轮结论：{experiment.delta >= 0 ? '正向' : '轻微负向'}</b><p>{experiment.conclusion}</p></div>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>实验周期趋势</h2><p>{formatDate(experiment.start)}–{formatDate(experiment.end)} · 仅展示本轮实验期数据</p></div></div><Card className="chartCard"><ActiveExperimentTrendChart items={periodItems} /></Card></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>按周三开始，观察 7 天</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
   </section>;
 }
 
@@ -275,7 +285,7 @@ function LocalPackageWeeklyChanges() {
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地包上线后周度变化</h2><p>后续每周在此追加，首周仅含已收数日期</p></div></div><Card className="targetGameCard"><div className="targetGameTable targetGameTableSingle" role="table" aria-label="本地包上线后周度变化"><div className="targetGameHead" role="row"><span>观察周期</span><span>总启动</span><span>本地热门</span><span>本地包地区配置</span></div><div className="targetGameRow" role="row"><strong>第 1 周 · 8/14–8/18（5天）</strong><span>72.08%<small>较上线前 +0.78pp</small></span><span>3.28%<small>入口迁移 -10.13pp</small></span><span>15.58%<small>较上线前 +13.88pp</small></span></div></div></Card></section>;
 }
 
-function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = '实验复盘', subtitle = '按实验区间切换查看 · 7/15 起本地包点击单列展示', showPackageWeeks = false }) {
+function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = '实验复盘', subtitle = '按实验区间切换查看 · 7/15 起本地包点击单列展示', showPackageWeeks = false, embedded = false }) {
   const scopedExperiments = EXPERIMENTS.filter(item => experimentIds.includes(item.id));
   const [experimentId, setExperimentId] = useState(scopedExperiments[scopedExperiments.length - 1].id);
   const experiment = EXPERIMENTS.find(item => item.id === experimentId);
@@ -316,7 +326,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
         ? [{ title: '每个月轮换一次首屏 Banner 素材。', detail: '素材替换已带动首屏 Banner 点击正向提升，后续按月轮换素材并持续观察点击表现。' }]
         : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
   return <>
-    <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/18</span></header>
+    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/18</span></header>}
     <Card className="experimentSelector"><div><b>选择实验区间</b><span>具体实验模块在下方实验分段中说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
     <section className="experimentBlock"><div className="sectionTitle"><div><h2>{experiment.title}</h2><p>{formatDate(experiment.start)}–{formatDate(experiment.end)} · 对比 {formatDate(experiment.beforeStart)}–{formatDate(experiment.beforeEnd)}</p></div></div>
       <Card className="experimentBrief"><div><span>实验模块</span><b>{experiment.module}</b></div><div><span>实验内容</span><b>{experiment.content}</b></div></Card>
@@ -331,10 +341,18 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   </>;
 }
 
+function AndroidNewUserPage() {
+  const [tab, setTab] = useState('global');
+  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>数据更新至 2026/08/18</span></header>
+    <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'local-hot'} className={tab === 'local-hot' ? 'selected' : ''} onClick={() => setTab('local-hot')}>本地热门实验复盘</button><button role="tab" aria-selected={tab === 'local-package'} className={tab === 'local-package' ? 'selected' : ''} onClick={() => setTab('local-package')}>本地包实验复盘</button></div>
+    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'local-hot' ? <ReviewPage key="new-local-hot-review" embedded experimentIds={LOCAL_HOT_EXPERIMENT_IDS} title="本地热门实验复盘" subtitle="安卓新用户 · 按实验区间切换查看" /> : <ReviewPage key="new-local-package-review" embedded experimentIds={LOCAL_PACKAGE_EXPERIMENT_IDS} title="本地包实验复盘" subtitle="安卓新用户 · 本地包正式上线后的变化持续在此展示" showPackageWeeks />}
+  </>;
+}
+
 function ConversionDashboard() {
-  const [page, setPage] = useState('global');
-  const activeGroup = ['global', 'local-hot-review', 'local-package-review'].includes(page) ? 'new' : 'active';
-  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light"><aside className="reportNav"><div className="reportBrand"><span>平台分发效果看板</span><small>用户分发数据分析</small></div><nav aria-label="报告导航"><button className={`navGroup ${activeGroup === 'new' ? 'selected' : ''}`} onClick={() => setPage('global')}><BarChart3 />新用户分发</button>{activeGroup === 'new' && <div className="navChildren"><span className="navSectionLabel">安卓新用户分发</span><button className={page === 'global' ? 'selected' : ''} onClick={() => setPage('global')}>全局数据</button><button className={page === 'local-hot-review' ? 'selected' : ''} onClick={() => setPage('local-hot-review')}>本地热门实验复盘</button><button className={page === 'local-package-review' ? 'selected' : ''} onClick={() => setPage('local-package-review')}>本地包实验复盘</button></div>}<button className={`navGroup ${activeGroup === 'active' ? 'selected' : ''}`} onClick={() => setPage('pc-distribution')}><TrendingUp />活跃用户分发</button>{activeGroup === 'active' && <div className="navChildren"><button className={page === 'pc-distribution' ? 'selected' : ''} onClick={() => setPage('pc-distribution')}>PC 活跃用户分发数据</button><button className={page === 'android-distribution' ? 'selected' : ''} onClick={() => setPage('android-distribution')}>安卓活跃用户分发数据</button></div>}</nav><p>数据由人工补充<br />更新后生成本地报告</p></aside><main className="reportMain"><div className="reportContent">{page === 'global' ? <GlobalDataPage /> : page === 'local-hot-review' ? <ReviewPage key="local-hot-review" experimentIds={LOCAL_HOT_EXPERIMENT_IDS} title="本地热门实验复盘" subtitle="安卓新用户 · 按实验区间切换查看" /> : page === 'local-package-review' ? <ReviewPage key="local-package-review" experimentIds={LOCAL_PACKAGE_EXPERIMENT_IDS} title="本地包实验复盘" subtitle="安卓新用户 · 本地包正式上线后的变化持续在此展示" showPackageWeeks /> : <TargetGamePage platform={page === 'pc-distribution' ? 'pc' : 'android'} />}</div></main></div>;
+  const [page, setPage] = useState('android-new-user');
+  const activeGroup = page === 'android-new-user' ? 'new' : 'active';
+  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light"><aside className="reportNav"><div className="reportBrand"><span>平台分发效果看板</span><small>用户分发数据分析</small></div><nav aria-label="报告导航"><button className={`navGroup ${activeGroup === 'new' ? 'selected' : ''}`} onClick={() => setPage('android-new-user')}><BarChart3 />新用户分发</button>{activeGroup === 'new' && <div className="navChildren"><button className={page === 'android-new-user' ? 'selected' : ''} onClick={() => setPage('android-new-user')}>安卓新用户分发</button></div>}<button className={`navGroup ${activeGroup === 'active' ? 'selected' : ''}`} onClick={() => setPage('pc-distribution')}><TrendingUp />活跃用户分发</button>{activeGroup === 'active' && <div className="navChildren"><button className={page === 'pc-distribution' ? 'selected' : ''} onClick={() => setPage('pc-distribution')}>PC 活跃用户分发数据</button><button className={page === 'android-distribution' ? 'selected' : ''} onClick={() => setPage('android-distribution')}>安卓活跃用户分发数据</button></div>}</nav><p>数据由人工补充<br />更新后生成本地报告</p></aside><main className="reportMain"><div className="reportContent">{page === 'android-new-user' ? <AndroidNewUserPage /> : <TargetGamePage platform={page === 'pc-distribution' ? 'pc' : 'android'} />}</div></main></div>;
 }
 
 export default ConversionDashboard;
