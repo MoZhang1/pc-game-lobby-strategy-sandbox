@@ -6,6 +6,7 @@ import { BarChart3, CalendarDays, FileSearch, TrendingDown, TrendingUp } from 'l
 import './conversion-dashboard.css';
 import './astryx-report.css';
 import './astryx-report-overrides.css';
+import { LOCAL_PACKAGE_GEO_DATA } from './localPackageGeoData';
 
 const BASE_EVENTS = [
   { id: 'TOTAL_START', label: '总启动（用户启动＋本地包相关点击）', shortLabel: '总启动' },
@@ -287,6 +288,23 @@ function LocalPackageWeeklyChanges() {
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地包上线后周度变化</h2><p>后续每周在此追加，首周仅含已收数日期</p></div></div><Card className="targetGameCard"><div className="targetGameTable targetGameTableSingle" role="table" aria-label="本地包上线后周度变化"><div className="targetGameHead" role="row"><span>观察周期</span><span>总启动</span><span>本地热门</span><span>本地包地区配置</span></div><div className="targetGameRow" role="row"><strong>第 1 周 · 8/14–8/18（5天）</strong><span>72.08%<small>较上线前 +0.78pp</small></span><span>3.28%<small>入口迁移 -10.13pp</small></span><span>15.58%<small>较上线前 +13.88pp</small></span></div></div></Card></section>;
 }
 
+function LocalPackageGeoReview() {
+  const [province, setProvince] = useState('全部');
+  const { meta, total, provinces, cities } = LOCAL_PACKAGE_GEO_DATA;
+  const rate = (numerator, denominator) => denominator ? `${(numerator / denominator * 100).toFixed(2)}%` : '—';
+  const cityRows = province === '全部' ? cities : cities.filter(item => item.province === province);
+  const classifiedUsers = total.newUsers - meta.unmappedNewUsers;
+  return <section className="localPackageGeoReview">
+    <section className="pageSection"><div className="sectionTitle"><div><h2>本地包地区分发总览</h2><p>{formatDate(meta.start)}–{formatDate(meta.end)} · 按新增用户口径汇总</p></div></div>
+      <div className="reviewMetrics geoMetrics"><Metric label="新增→页面曝光" value={rate(total.pageExposure, total.newUsers)} helper={`${total.pageExposure.toLocaleString()} / ${total.newUsers.toLocaleString()} · 入口覆盖`} icon={BarChart3} /><Metric label="页面曝光→总点击" value={rate(total.totalClicks, total.pageExposure)} helper={`${total.totalClicks.toLocaleString()} / ${total.pageExposure.toLocaleString()} · 页面承接`} icon={TrendingUp} /><Metric label="新增→总点击" value={rate(total.totalClicks, total.newUsers)} helper="本地包地区分发主指标" tone="positive" icon={TrendingUp} /><Metric label="地域可归属率" value={rate(classifiedUsers, total.newUsers)} helper={`按城市补回真实省份；${meta.unmappedNewUsers} 新增仍为未知城市`} icon={FileSearch} /></div>
+      <div className="reviewCallout geoCallout"><b>地域补全说明</b><p>原始数据中“未知省份”覆盖 {meta.rawUnknownProvinceNewUsers.toLocaleString()} 名新增用户（{rate(meta.rawUnknownProvinceNewUsers, total.newUsers)}）。已按城市映射回真实省份；仅“未知城市”{meta.unmappedNewUsers} 名（{rate(meta.unmappedNewUsers, total.newUsers)}）保留为未归属，未计入任何省份，也不按 0 转化处理。台湾本期无数据。</p></div>
+    </section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>省级分发转化</h2><p>全量省份均保留；无数据与低样本不参与优劣判断</p></div></div><Card className="geoTableCard"><div className="geoTable" role="table" aria-label="本地包省级分发转化"><div className="geoTableHead" role="row"><span>省份</span><span>数据状态</span><span>新增UV</span><span>新增→页面曝光</span><span>页面曝光→总点击</span><span>新增→总点击</span><span>配置推荐点击率</span></div>{provinces.map(item => <div className="geoTableRow" role="row" key={item.province}><strong>{item.province}</strong><span className={item.status === '无数据' ? 'geoMuted' : ''}>{item.status}</span><span data-label="新增UV">{item.newUsers ? item.newUsers.toLocaleString() : '—'}</span><span data-label="新增→页面曝光">{rate(item.pageExposure, item.newUsers)}</span><span data-label="页面曝光→总点击">{rate(item.totalClicks, item.pageExposure)}</span><b data-label="新增→总点击">{rate(item.totalClicks, item.newUsers)}</b><span data-label="配置推荐点击率">{rate(item.configuredClicks, item.pageExposure)}</span></div>)}</div></Card></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>城市分发转化</h2><p>按城市汇总；低样本只作观察，不单独判定实验优劣</p></div><label className="eventSelect">查看省份<select value={province} onChange={event => setProvince(event.target.value)} aria-label="选择本地包城市所属省份"><option value="全部">全部城市（{cities.length}）</option>{provinces.filter(item => item.status === '有数据').map(item => <option value={item.province} key={item.province}>{item.province}</option>)}</select></label></div><Card className="geoTableCard"><div className="geoTable cityGeoTable" role="table" aria-label="本地包城市分发转化"><div className="geoTableHead" role="row"><span>省份 / 城市</span><span>归属方式</span><span>新增UV</span><span>新增→页面曝光</span><span>页面曝光→总点击</span><span>新增→总点击</span><span>算法 / 配置点击率</span></div>{cityRows.map(item => <div className="geoTableRow" role="row" key={`${item.province}-${item.city}`}><strong>{item.province === '未知' ? '待归属' : item.province} · {item.city}</strong><span className={item.mapping === '无法归属' ? 'geoMuted' : ''}>{item.mapping}</span><span data-label="新增UV">{item.newUsers.toLocaleString()}</span><span data-label="新增→页面曝光">{rate(item.pageExposure, item.newUsers)}</span><span data-label="页面曝光→总点击">{rate(item.totalClicks, item.pageExposure)}</span><b data-label="新增→总点击">{rate(item.totalClicks, item.newUsers)}</b><span data-label="算法 / 配置点击率">{rate(item.algorithmClicks, item.algorithmExposure)} / {rate(item.configuredClicks, item.pageExposure)}</span></div>)}</div></Card></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>本地包实验标准流程</h2><p>本轮实验从周三开始；未填实验内容前只展示基线，不输出实验结论</p></div></div><Card className="experimentBrief geoExperimentPlan"><div><span>0. 基线锁定</span><b>周三前 7 天（8/19–8/25）</b><small>按省、市、版本和活动 Banner 状态存档；8/25 收数后不回填改口径。</small></div><div><span>1. 实验执行</span><b>周三后 7 天（8/26–9/1）</b><small>实验城市与对照城市同时保留；同一城市只上线一个规则版本。</small></div><div><span>2. 主指标</span><b>新增→总点击率</b><small>总点击UV / 新增UV；同时拆解新增→页面曝光、页面曝光→总点击和各入口点击。</small></div></Card><ol className="reviewActions"><li><b>分组规则：按城市做实验，按基线规模和转化分层。</b><span>基线新增UV≥30、页面曝光UV≥20 的城市进入实验/对照池；其余城市仅观察，不单独下结论。</span></li><li><b>结论规则：同时看实验组与对照组的同周期变化。</b><span>只有实验组相对对照组的新增→总点击率提升，且页面曝光不明显下滑，才认定为正向；只做前后对比不作为因果结论。</span></li><li><b>环境变量单列：版本、活动 Banner、地区配置和数据归属。</b><span>出现 Banner 投放、版本切换、城市归属缺失或口径变化时，标注异常并从主结论中剥离。</span></li><li><b>复盘节奏：第 7 天出初判，第 14 天验证稳定性。</b><span>看板固定展示实验内容、实验/对照城市、样本量、主指标变化、入口拆解、异常城市和下一步动作。</span></li></ol></section>
+  </section>;
+}
+
 function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = '实验复盘', subtitle = '按实验区间切换查看 · 7/15 起本地包点击单列展示', showPackageWeeks = false, embedded = false }) {
   const scopedExperiments = EXPERIMENTS.filter(item => experimentIds.includes(item.id));
   const [experimentId, setExperimentId] = useState(scopedExperiments[scopedExperiments.length - 1].id);
@@ -345,9 +363,9 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
 
 function AndroidNewUserPage() {
   const [tab, setTab] = useState('global');
-  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>数据更新至 2026/08/18</span></header>
+  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/08/18 · 本地包地区数据至 2026/08/24</span></header>
     <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'local-hot'} className={tab === 'local-hot' ? 'selected' : ''} onClick={() => setTab('local-hot')}>本地热门实验复盘</button><button role="tab" aria-selected={tab === 'local-package'} className={tab === 'local-package' ? 'selected' : ''} onClick={() => setTab('local-package')}>本地包实验复盘</button></div>
-    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'local-hot' ? <ReviewPage key="new-local-hot-review" embedded experimentIds={LOCAL_HOT_EXPERIMENT_IDS} title="本地热门实验复盘" subtitle="安卓新用户 · 按实验区间切换查看" /> : <ReviewPage key="new-local-package-review" embedded experimentIds={LOCAL_PACKAGE_EXPERIMENT_IDS} title="本地包实验复盘" subtitle="安卓新用户 · 本地包正式上线后的变化持续在此展示" showPackageWeeks />}
+    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'local-hot' ? <ReviewPage key="new-local-hot-review" embedded experimentIds={LOCAL_HOT_EXPERIMENT_IDS} title="本地热门实验复盘" subtitle="安卓新用户 · 按实验区间切换查看" /> : <><LocalPackageGeoReview /><ReviewPage key="new-local-package-review" embedded experimentIds={LOCAL_PACKAGE_EXPERIMENT_IDS} title="本地包实验复盘" subtitle="安卓新用户 · 本地包正式上线后的变化持续在此展示" showPackageWeeks /></>}
   </>;
 }
 
