@@ -275,9 +275,18 @@ function AndroidActiveExperimentReview() {
   </section>;
 }
 
+function PcActiveExperimentReview() {
+  return <section className="pageSection"><div className="sectionTitle"><div><h2>首轮实验复盘</h2><p>PC 活跃用户 · 实验进行中，暂不输出效果结论</p></div></div>
+    <Card className="experimentBrief geoExperimentPlan"><div><span>实验周期</span><b>8/26–9/1</b><small>周三开始配置；下周三收齐 7 天数据后与基线比较。</small></div><div><span>实验前基线</span><b>8/19–8/25 · 24.40%</b><small>进入目标游戏 143,864 / 活跃用户池 589,580。</small></div><div><span>主指标</span><b>进入目标游戏变现率</b><small>变现UV / 老用户池UV；同步观察营收棋牌游戏与联运创角。</small></div></Card>
+    <section className="experimentBlock"><Card className="experimentBrief activeUserExperiment"><div><span>实验模块</span><b>精品游戏分类配置 / 高活跃地区本地热门</b></div><div><span>实验内容 1</span><b>调整精品游戏的扑克、麻将游戏分类配置，提高目标游戏分发权重。</b></div><div><span>实验内容 2</span><b>调整高活跃地区的本地热门配置，提高目标游戏分发权重。</b></div></Card>
+    <div className="reviewCallout activeUserCallout"><b>当前状态：进行中</b><p>本轮包含两项配置同时生效，当前仅锁定实验前基线；未收齐 8/26–9/1 数据前，不判断正负效果。</p></div>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下周复盘标准</h2></div></div><ol className="reviewActions"><li><b>先看进入目标游戏变现率相对基线的变化。</b><span>比较 8/26–9/1 与 8/19–8/25 的整体变现率，作为主结论。</span></li><li><b>再拆营收棋牌游戏与联运创角。</b><span>确认增量是否主要来自目标营收游戏，避免只看整体均值。</span></li><li><b>两项配置同时生效，暂不拆分单项因果。</b><span>若结果正向，下一轮再拆“精品分类”和“高活跃地区本地热门”分别验证。</span></li></ol></section></section>
+  </section>;
+}
+
 function TargetGamePage({ platform }) {
   const isPc = platform === 'pc';
-  const [androidTab, setAndroidTab] = useState('overview');
+  const [distributionTab, setDistributionTab] = useState('overview');
   const name = isPc ? 'PC 新大厅老用户' : '安卓活跃用户';
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
   const change = latest[platform].total - first[platform].total;
@@ -285,11 +294,11 @@ function TargetGamePage({ platform }) {
   const conclusion = isPc ? '8 月为 1–25 日累计，进入营收游戏占比 24.17%，较 7 月回落 1.45pp，仍需待整月数据确认趋势。' : '8 月 1–25 日进入营收游戏占比 42.51%，较 7 月提升 1.28pp，处于年内高位；本地热门第三轮第 5 位改营收棋牌的结果见实验复盘。';
   return <>
     <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/08/25</span></header>
-    {!isPc && <div className="activeDistributionTabs" role="tablist" aria-label="安卓活跃用户分发页签"><button role="tab" aria-selected={androidTab === 'overview'} className={androidTab === 'overview' ? 'selected' : ''} onClick={() => setAndroidTab('overview')}>整体数据</button><button role="tab" aria-selected={androidTab === 'review'} className={androidTab === 'review' ? 'selected' : ''} onClick={() => setAndroidTab('review')}>实验复盘</button></div>}
-    {(isPc || androidTab === 'overview') ? <><div className="targetMetrics"><Metric label={`${latest.label}进入营收游戏占比`} value={`${latest[platform].total.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label={`1月–${latest.label}变化`} value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label={`${latest.label}营收棋牌游戏占比`} value={`${latest[platform].game.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label={`${latest.label}联运创角占比`} value={`${latest[platform].union.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
+    <div className="activeDistributionTabs" role="tablist" aria-label={`${isPc ? 'PC' : '安卓'}活跃用户分发页签`}><button role="tab" aria-selected={distributionTab === 'overview'} className={distributionTab === 'overview' ? 'selected' : ''} onClick={() => setDistributionTab('overview')}>整体数据</button><button role="tab" aria-selected={distributionTab === 'review'} className={distributionTab === 'review' ? 'selected' : ''} onClick={() => setDistributionTab('review')}>实验复盘</button></div>
+    {distributionTab === 'overview' ? <><div className="targetMetrics"><Metric label={`${latest.label}进入营收游戏占比`} value={`${latest[platform].total.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label={`1月–${latest.label}变化`} value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label={`${latest.label}营收棋牌游戏占比`} value={`${latest[platform].game.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label={`${latest.label}联运创角占比`} value={`${latest[platform].union.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
     <div className="targetConclusion"><b>月度走势结论</b><p>{conclusion}</p><p>主要变化来自<strong>营收棋牌游戏</strong>；联运创角占比低，暂不是进入营收游戏占比的主要驱动。当前数据只能说明同步走势，未包含版本、城市或游戏位明细，不能直接判定具体策略的因果效果。</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>进入营收游戏趋势</h2><p>按月汇总：当月进入营收游戏 UV / 当月用户池 UV</p></div></div><Card className="chartCard"><TargetGameTrendChart platform={platform} /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>月度分发明细</h2><p>进入营收游戏占比由营收棋牌游戏与联运创角构成</p></div></div><Card className="targetGameCard"><TargetGameTable platform={platform} /></Card></section></> : <AndroidActiveExperimentReview />}
+    <section className="pageSection"><div className="sectionTitle"><div><h2>月度分发明细</h2><p>进入营收游戏占比由营收棋牌游戏与联运创角构成</p></div></div><Card className="targetGameCard"><TargetGameTable platform={platform} /></Card></section></> : isPc ? <PcActiveExperimentReview /> : <AndroidActiveExperimentReview />}
   </>;
 }
 
