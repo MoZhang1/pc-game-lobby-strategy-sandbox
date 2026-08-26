@@ -240,7 +240,7 @@ function TargetGameTrendChart({ platform }) {
 const ACTIVE_EXPERIMENTS = [
   { id: 'active-local-hot-v1', title: '第一轮 · 营收游戏前移', start: '2026-08-05', end: '2026-08-11', beforeStart: '2026-07-29', beforeEnd: '2026-08-04', baseline: '7/29–8/4', baselineRate: 42.03, baselineHelper: '541,897 / 1,289,395', resultRate: 42.59, resultHelper: '548,462 / 1,287,715', delta: 0.56, content: '营收游戏从第 4、5 位前移至第 3、4 位，第 5 位由棋牌游戏补位；即营收游戏整体前移一位，棋牌游戏向后补一位。', conclusion: '正向。进入营收游戏占比提升 0.56pp，主要来自营收棋牌游戏提升 0.53pp。', next: '保留营收游戏第 3、4 位，继续验证第 5 位替换方案。' },
   { id: 'active-local-hot-v2', title: '第二轮 · 第 5 位改联运游戏', start: '2026-08-12', end: '2026-08-18', beforeStart: '2026-08-05', beforeEnd: '2026-08-11', baseline: '8/5–8/11', baselineRate: 42.59, baselineHelper: '548,462 / 1,287,715', resultRate: 42.47, resultHelper: '543,188 / 1,278,889', delta: -0.12, content: '保持营收游戏在第 3、4 位不变，将第 5 位从棋牌游戏替换为联运游戏。', conclusion: '轻微负向。营收棋牌游戏 -0.05pp、联运创角 -0.09pp，未补足第 5 位替换带来的损失。', next: '先结合第二周观察结果复盘，暂不预设下一轮配置。' },
-  { id: 'active-local-hot-v2-observation', title: '第二轮观察 · 第 5 位联运游戏保持', start: '2026-08-19', end: '2026-08-25', beforeStart: '2026-08-12', beforeEnd: '2026-08-18', baseline: '8/12–8/18', baselineRate: 42.47, baselineHelper: '543,188 / 1,278,889', resultRate: 42.71, resultHelper: '545,110 / 1,276,344', delta: 0.24, content: '未再调整本地热门，保持营收游戏第 3、4 位及第 5 位联运游戏，观察第二周稳定性。', conclusion: '整体回升，但联运位未证明有效。总变现率 +0.24pp，主要来自营收棋牌游戏回升；联运创角仍较首周 -0.02pp，未形成新增贡献。', next: '本周先确认复盘结论，后续实验配置待确认后再上线。' },
+  { id: 'active-local-hot-v3', title: '第三轮 · 第 5 位联运改营收棋牌', start: '2026-08-19', end: '2026-08-25', beforeStart: '2026-08-12', beforeEnd: '2026-08-18', baseline: '8/12–8/18', baselineRate: 42.47, baselineHelper: '543,188 / 1,278,889', resultRate: 42.71, resultHelper: '545,110 / 1,276,344', delta: 0.24, content: '保持营收游戏第 3、4 位不变，将第 5 位从联运游戏替换为营收棋牌游戏。', conclusion: '正向。进入营收游戏占比 +0.24pp，营收棋牌游戏同步 +0.24pp；联运创角 -0.02pp，符合第 5 位由联运改为营收棋牌后的预期变化。', next: '保持当前第 5 位营收棋牌游戏配置，继续观察稳定性；后续实验配置待确认后再上线。' },
 ];
 
 function ActiveExperimentTrendChart({ items, markerDate }) {
@@ -261,7 +261,7 @@ function TargetGameTable({ platform }) {
 }
 
 function AndroidActiveExperimentReview() {
-  const [experimentId, setExperimentId] = useState('active-local-hot-v2-observation');
+  const [experimentId, setExperimentId] = useState('active-local-hot-v3');
   const experiment = ACTIVE_EXPERIMENTS.find(item => item.id === experimentId);
   const comparisonItems = ACTIVE_EXPERIMENT_DAILY.filter(item => item.date >= experiment.beforeStart && item.date <= experiment.end);
   const tone = experiment.delta >= 0 ? 'positive' : 'negative';
@@ -282,7 +282,7 @@ function TargetGamePage({ platform }) {
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
   const change = latest[platform].total - first[platform].total;
   const monthChange = latest[platform].total - previous[platform].total;
-  const conclusion = isPc ? '8 月为 1–25 日累计，进入营收游戏占比 24.17%，较 7 月回落 1.45pp，仍需待整月数据确认趋势。' : '8 月 1–25 日进入营收游戏占比 42.51%，较 7 月提升 1.28pp，处于年内高位；本地热门第二轮的两周观察结果见实验复盘。';
+  const conclusion = isPc ? '8 月为 1–25 日累计，进入营收游戏占比 24.17%，较 7 月回落 1.45pp，仍需待整月数据确认趋势。' : '8 月 1–25 日进入营收游戏占比 42.51%，较 7 月提升 1.28pp，处于年内高位；本地热门第三轮第 5 位改营收棋牌的结果见实验复盘。';
   return <>
     <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/08/25</span></header>
     {!isPc && <div className="activeDistributionTabs" role="tablist" aria-label="安卓活跃用户分发页签"><button role="tab" aria-selected={androidTab === 'overview'} className={androidTab === 'overview' ? 'selected' : ''} onClick={() => setAndroidTab('overview')}>整体数据</button><button role="tab" aria-selected={androidTab === 'review'} className={androidTab === 'review' ? 'selected' : ''} onClick={() => setAndroidTab('review')}>实验复盘</button></div>}
