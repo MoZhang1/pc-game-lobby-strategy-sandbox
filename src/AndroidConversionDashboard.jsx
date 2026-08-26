@@ -6,7 +6,7 @@ import { BarChart3, CalendarDays, FileSearch, TrendingDown, TrendingUp } from 'l
 import './conversion-dashboard.css';
 import './astryx-report.css';
 import './astryx-report-overrides.css';
-import { LOCAL_PACKAGE_GEO_DATA } from './localPackageGeoData';
+import { LOCAL_PACKAGE_GEO_DATA, LOCAL_PACKAGE_GEO_PERIODS } from './localPackageGeoData';
 
 const BASE_EVENTS = [
   { id: 'TOTAL_START', label: '总启动（用户启动＋本地包相关点击）', shortLabel: '总启动' },
@@ -110,6 +110,10 @@ const EXPERIMENTS = [
   {
     id: 'local-package-official-launch', title: '正式上线 · 新用户本地包', module: '新用户本地包',
     metricId: '1018905', content: '8 月 14 日本地包正式上线。此后安卓首日新用户展示本地包，活跃用户继续展示旧本地热门。', start: '2026-08-14', end: '2026-08-18', beforeStart: '2026-08-11', beforeEnd: '2026-08-13',
+  },
+  {
+    id: 'local-package-config-cities', title: '进行中 · 本地包运营配置', module: '本地包运营配置',
+    metricId: '1018905', content: '8 月 26 日起对山东、广东、安徽的本地包运营配置表进行配置。', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25', isOngoing: true,
   },
 ];
 
@@ -285,8 +289,7 @@ function TargetGamePage({ platform }) {
   </>;
 }
 
-const LOCAL_HOT_EXPERIMENT_IDS = ['local-hot-v1', 'local-hot-v2', 'local-hot-observation', 'local-hot-waiting-package'];
-const LOCAL_PACKAGE_EXPERIMENT_IDS = ['local-package-prepublish-incident', 'local-package-official-launch'];
+const NEW_USER_EXPERIMENT_IDS = ['local-hot-v1', 'local-hot-v2', 'local-hot-observation', 'local-hot-waiting-package', 'local-package-prepublish-incident', 'local-package-official-launch', 'local-package-config-cities'];
 
 function LocalPackageWeeklyChanges() {
   return <section className="pageSection"><div className="sectionTitle"><div><h2>本地包上线后周度变化</h2><p>后续每周在此追加，首周仅含已收数日期</p></div></div><Card className="targetGameCard"><div className="targetGameTable targetGameTableSingle" role="table" aria-label="本地包上线后周度变化"><div className="targetGameHead" role="row"><span>观察周期</span><span>总启动</span><span>本地热门</span><span>本地包地区配置</span></div><div className="targetGameRow" role="row"><strong>第 1 周 · 8/14–8/18（5天）</strong><span>72.08%<small>较上线前 +0.78pp</small></span><span>3.28%<small>入口迁移 -10.13pp</small></span><span>15.58%<small>较上线前 +13.88pp</small></span></div><div className="targetGameRow" role="row"><strong>第 2 周 · 8/19–8/25</strong><span>70.63%<small>较第 1 周 -1.45pp</small></span><span>3.01%<small>较第 1 周 -0.27pp</small></span><span>15.23%<small>较第 1 周 -0.35pp</small></span></div></div></Card></section>;
@@ -297,9 +300,11 @@ function LocalPackageConfigExperiment() {
 }
 
 function LocalPackageGeoReview() {
+  const [periodId, setPeriodId] = useState('2026-08-18_2026-08-25');
   const [province, setProvince] = useState('全部');
   const [provinceScope, setProvinceScope] = useState('全部');
-  const { meta, total, provinces, cities } = LOCAL_PACKAGE_GEO_DATA;
+  const selectedPeriod = LOCAL_PACKAGE_GEO_PERIODS?.find(item => item.id === periodId) || { id: '2026-08-17_2026-08-24', label: '8/17–8/24', data: LOCAL_PACKAGE_GEO_DATA };
+  const { meta, total, provinces, cities } = selectedPeriod.data;
   const rate = (numerator, denominator) => denominator ? `${(numerator / denominator * 100).toFixed(2)}%` : '—';
   const numericRate = (numerator, denominator) => denominator ? numerator / denominator * 100 : null;
   const cityRows = province === '全部' ? cities : cities.filter(item => item.province === province);
@@ -322,7 +327,7 @@ function LocalPackageGeoReview() {
   const priorityProvinces = largeSample.filter(item => insightFor(item).group === '优先优化' || insightFor(item).group === '待优化').map(item => item.province);
   return <section className="localPackageGeoReview">
     <section className="pageSection"><div className="sectionTitle"><div><h2>本地包地区分发总览</h2><p>{formatDate(meta.start)}–{formatDate(meta.end)} · 按新增用户口径汇总</p></div></div>
-      <Card className="geoToolbar"><div><span>数据时间区间</span><b>{formatDate(meta.start)}–{formatDate(meta.end)}（{meta.days} 天）</b><small>本地包上线以来已收数的完整日数据</small></div><label className="eventSelect">省份结论筛选<select value={provinceScope} onChange={event => setProvinceScope(event.target.value)} aria-label="选择省份结论筛选"><option value="全部">全部省份</option><option value="表现较好">表现较好</option><option value="稳定观察">稳定观察</option><option value="待优化">待优化</option><option value="优先优化">优先优化</option><option value="低样本观察">低样本观察</option><option value="无数据">无数据</option></select></label></Card>
+      <Card className="geoToolbar"><div><span>数据时间区间</span><b>{formatDate(meta.start)}–{formatDate(meta.end)}（{meta.days} 天）</b><small>自 8/17 起按滚动 8 天观察省、市数据</small></div><label className="eventSelect">观察区间<select value={periodId} onChange={event => { setPeriodId(event.target.value); setProvince('全部'); setProvinceScope('全部'); }} aria-label="选择本地包分城市观察区间">{LOCAL_PACKAGE_GEO_PERIODS.map(item => <option value={item.id} key={item.id}>{item.label}</option>)}</select></label><label className="eventSelect">省份结论筛选<select value={provinceScope} onChange={event => setProvinceScope(event.target.value)} aria-label="选择省份结论筛选"><option value="全部">全部省份</option><option value="表现较好">表现较好</option><option value="稳定观察">稳定观察</option><option value="待优化">待优化</option><option value="优先优化">优先优化</option><option value="低样本观察">低样本观察</option><option value="无数据">无数据</option></select></label></Card>
       <div className="reviewMetrics geoMetrics"><Metric label="页面曝光UV" value={total.pageExposure.toLocaleString()} helper={`${total.newUsers.toLocaleString()} 新增用户中的本地包页面曝光`} icon={BarChart3} /><Metric label="页面曝光→算法推荐点击" value={rate(total.algorithmClicks, total.pageExposure)} helper={`${total.algorithmClicks.toLocaleString()} / ${total.pageExposure.toLocaleString()} · 本页统一分母`} tone="positive" icon={TrendingUp} /><Metric label="页面曝光→配置推荐点击" value={rate(total.configuredClicks, total.pageExposure)} helper={`${total.configuredClicks.toLocaleString()} / ${total.pageExposure.toLocaleString()} · 本页统一分母`} tone="positive" icon={TrendingUp} /><Metric label="地域可归属率" value={rate(classifiedUsers, total.newUsers)} helper={`按城市补回真实省份；${meta.unmappedNewUsers} 新增仍为未知城市`} icon={FileSearch} /></div>
       <div className="reviewCallout geoCallout"><b>地域补全说明</b><p>原始数据中“未知省份”覆盖 {meta.rawUnknownProvinceNewUsers.toLocaleString()} 名新增用户（{rate(meta.rawUnknownProvinceNewUsers, total.newUsers)}）。已按城市映射回真实省份；仅“未知城市”{meta.unmappedNewUsers} 名（{rate(meta.unmappedNewUsers, total.newUsers)}）保留为未归属，未计入任何省份，也不按 0 转化处理。台湾本期无数据。</p></div>
       <div className="reviewCallout geoConclusion"><b>省级结论</b><p>本页仅按页面曝光后的两类推荐点击判断：全量<strong>算法推荐点击率 {rate(total.algorithmClicks, total.pageExposure)}</strong>、<strong>配置推荐点击率 {rate(total.configuredClicks, total.pageExposure)}</strong>。在新增≥100的省份中，<strong>{topProvinces.join('、') || '暂无'}</strong>两类点击均较好，可保留规则并提炼城市样本。<strong>{priorityProvinces.join('、') || '暂无'}</strong>需优先优化：算法点击弱先调候选池/城市权重，配置点击弱先调配置游戏和排序。</p></div>
@@ -340,6 +345,12 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const scopedExperiments = EXPERIMENTS.filter(item => experimentIds.includes(item.id));
   const [experimentId, setExperimentId] = useState(scopedExperiments[scopedExperiments.length - 1].id);
   const experiment = EXPERIMENTS.find(item => item.id === experimentId);
+  if (experiment.isOngoing) return <>
+    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/25</span></header>}
+    <Card className="experimentSelector"><div><b>选择实验区间</b><span>本地热门与本地包按周连续展示，具体模块在下方说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
+    <LocalPackageConfigExperiment />
+    <LocalPackageExperimentProtocol />
+  </>;
   const before = getSummary(experiment.beforeStart, experiment.beforeEnd);
   const after = getSummary(experiment.start, experiment.end);
   const experimentMetric = eventSeries[experiment.metricId];
@@ -378,7 +389,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
         : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
   return <>
     {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/25</span></header>}
-    <Card className="experimentSelector"><div><b>选择实验区间</b><span>具体实验模块在下方实验分段中说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
+    <Card className="experimentSelector"><div><b>选择实验区间</b><span>本地热门与本地包按周连续展示，具体模块在下方说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
     <section className="experimentBlock"><div className="sectionTitle"><div><h2>{experiment.title}</h2><p>{formatDate(experiment.start)}–{formatDate(experiment.end)} · 对比 {formatDate(experiment.beforeStart)}–{formatDate(experiment.beforeEnd)}</p></div></div>
       <Card className="experimentBrief"><div><span>实验模块</span><b>{experiment.module}</b></div><div><span>实验内容</span><b>{experiment.content}</b></div></Card>
       <div className="reviewCallout"><b>实验效果结论</b>{experimentId === 'local-package-official-launch' ? <><p>本地包正式上线后，首日新用户总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}），上线初期保持稳定。</p><p>展示入口已完成迁移：本地热门从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%，同时本地包地区配置从 {before.stats['1018905'].rate.toFixed(2)}% 升至 {after.stats['1018905'].rate.toFixed(2)}%。各本地包事件的点击用户可能重叠，不能相加为总点击率；当前仅说明点击主要转移到本地包，正式上线数据仍只有 5 天，继续观察稳定性。</p></> : experimentId === 'first-banner-material' ? <><p>素材替换对首屏 Banner 点击有<strong className="positive">正向提升</strong>（0.84% → 1.08%，{formatPp(moduleDelta)}）。</p><p>后续每个月轮换一次首屏 Banner 素材，持续带动首屏 Banner 点击。</p></> : experimentId === 'local-package-prepublish-incident' ? <><p>本地热门全周期从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%（{formatPp(moduleDelta)}），但总启动基本持平（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p><strong>8/8–8/10 为异常期：</strong>本地热门仅 4.79%，本地包广告位推荐升至 7.09%；8/11 本地热门回升至 13.27%。判断为疑似预发本地包版本影响线上、点击转移至本地包，<strong>不纳入正常本地热门实验效果</strong>。</p></> : experimentId === 'local-hot-waiting-package' ? <><p>本周未调整本地热门，因此<strong>不将变化归因于本地热门策略</strong>。本地热门点击基本持平（{formatPp(moduleDelta)}），总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}）。</p><p>最大同步正向模块是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}；同时活动 Banner 出现点击，仍仅作为环境变量。安卓正等待产品本地包版本更新，预计 8 月 10 日上线后才可能出现更明显的数据变化。</p></> : <><p>对实验模块：<strong className={moduleDelta >= 0 ? 'positive' : 'negative'}>{moduleVerdict}</strong>（{experimentMetric.shortLabel} {formatPp(moduleDelta)}）。对总启动：<strong className={totalDelta >= 0 ? 'positive' : 'negative'}>{startupVerdict}</strong>（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p>若总启动变化不是由实验模块带动，当前模块粒度下的最大同步候选是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}。这只是同步信号，不代表因果；模块点击用户可重叠，现有数据无法把总启动变化精确拆到单一模块。</p></>}</div>
@@ -394,9 +405,9 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
 
 function AndroidNewUserPage() {
   const [tab, setTab] = useState('global');
-  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/08/25 · 本地包地区数据可分析至 2026/08/24</span></header>
-    <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'local-hot'} className={tab === 'local-hot' ? 'selected' : ''} onClick={() => setTab('local-hot')}>本地热门实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button><button role="tab" aria-selected={tab === 'local-package-review'} className={tab === 'local-package-review' ? 'selected' : ''} onClick={() => setTab('local-package-review')}>本地包实验复盘</button></div>
-    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'local-hot' ? <ReviewPage key="new-local-hot-review" embedded experimentIds={LOCAL_HOT_EXPERIMENT_IDS} title="本地热门实验复盘" subtitle="安卓新用户 · 按实验区间切换查看" /> : tab === 'local-package-geo' ? <LocalPackageGeoReview /> : <><LocalPackageConfigExperiment /><ReviewPage key="new-local-package-review" embedded experimentIds={LOCAL_PACKAGE_EXPERIMENT_IDS} title="本地包实验复盘" subtitle="安卓新用户 · 本地包正式上线后的变化持续在此展示" showPackageWeeks /><LocalPackageExperimentProtocol /></>}
+  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/08/25 · 本地包分城市数据支持 8/17 起滚动观察</span></header>
+    <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'review'} className={tab === 'review' ? 'selected' : ''} onClick={() => setTab('review')}>实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button></div>
+    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'review' ? <ReviewPage key="new-user-experiment-review" embedded experimentIds={NEW_USER_EXPERIMENT_IDS} title="实验复盘" subtitle="安卓新用户 · 本地热门与本地包按周统一复盘" /> : <LocalPackageGeoReview />}
   </>;
 }
 
