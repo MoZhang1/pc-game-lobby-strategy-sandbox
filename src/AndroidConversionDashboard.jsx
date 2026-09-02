@@ -61,6 +61,7 @@ const DAILY_ROWS = [
   ['2026-08-11',550,391,73,7,8,2,0,3,73,26,111,105], ['2026-08-12',545,376,82,4,6,2,0,4,79,25,101,104], ['2026-08-13',553,408,66,5,8,0,0,1,96,27,126,112],
   ['2026-08-14',534,373,21,0,1,1,0,1,63,16,113,71], ['2026-08-15',535,383,13,0,2,0,0,0,69,30,114,66], ['2026-08-16',539,394,19,0,2,1,0,0,85,26,101,67], ['2026-08-17',533,385,11,0,1,1,0,0,67,32,99,59], ['2026-08-18',542,399,24,2,2,1,0,0,65,22,110,78],
   ['2026-08-19',512,373,13,1,3,2,0,1,63,18,115,68], ['2026-08-20',533,373,14,0,3,0,0,1,73,22,106,72], ['2026-08-21',543,377,19,1,3,0,0,2,82,25,117,67], ['2026-08-22',540,385,15,2,1,1,0,2,81,26,101,61], ['2026-08-23',584,424,22,2,1,0,0,1,80,32,119,71], ['2026-08-24',559,390,14,4,2,0,0,6,79,26,120,58], ['2026-08-25',485,331,16,0,2,0,0,0,63,14,97,50],
+  ['2026-08-26',522,353,14,1,1,0,0,3,71,24,109,54], ['2026-08-27',507,342,12,3,0,0,0,0,65,29,110,46], ['2026-08-28',502,366,12,0,1,0,3,0,74,24,101,48], ['2026-08-29',553,389,20,2,1,0,4,0,62,26,98,53], ['2026-08-30',539,376,15,1,4,0,1,1,72,32,99,47], ['2026-08-31',453,328,19,1,3,1,0,0,57,22,95,54], ['2026-09-01',500,354,18,1,1,0,0,0,57,20,111,49],
 ];
 
 // 7/15 起本地包点击从本地热门中拆分为独立事件；此前无此埋点，按 0 展示。
@@ -71,6 +72,7 @@ const PACKAGE_ROWS = [
   ['2026-08-05',0,5,0,1], ['2026-08-06',6,6,1,2], ['2026-08-07',7,7,7,37], ['2026-08-08',12,4,15,42], ['2026-08-09',13,11,18,66], ['2026-08-10',4,4,6,9], ['2026-08-11',7,9,1,3],
   ['2026-08-12',6,8,0,4], ['2026-08-13',10,11,0,2], ['2026-08-14',46,71,5,26], ['2026-08-15',50,90,12,35], ['2026-08-16',41,82,5,22], ['2026-08-17',45,91,12,31], ['2026-08-18',49,84,11,25],
   ['2026-08-19',39,82,19,24], ['2026-08-20',39,67,7,23], ['2026-08-21',42,73,9,21], ['2026-08-22',49,88,6,29], ['2026-08-23',35,103,9,22], ['2026-08-24',55,87,7,34], ['2026-08-25',36,72,3,18],
+  ['2026-08-26',48,76,3,19], ['2026-08-27',38,71,2,19], ['2026-08-28',50,70,6,28], ['2026-08-29',52,72,8,29], ['2026-08-30',38,93,6,21], ['2026-08-31',35,73,6,22], ['2026-09-01',49,77,3,17],
 ];
 const packageByDate = Object.fromEntries(PACKAGE_ROWS.map(([date, ...uvs]) => [date, Object.fromEntries(PACKAGE_EVENTS.map((event, index) => [event.id, uvs[index]]))]));
 
@@ -116,8 +118,8 @@ const EXPERIMENTS = [
     metricId: '1018905', content: '本地包已上线，未新增规则调整；观察 8/18–8/25 的总启动及本地热门、本地包入口变化。', start: '2026-08-18', end: '2026-08-25', beforeStart: '2026-08-11', beforeEnd: '2026-08-17',
   },
   {
-    id: 'local-package-config-cities', title: '进行中 · 本地包运营配置', module: '本地包运营配置',
-    metricId: '1018905', content: '8 月 26 日起对山东、广东、安徽的本地包运营配置表进行配置。', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25', isOngoing: true,
+    id: 'local-package-config-cities', title: '实验完成 · 本地包运营配置', module: '本地包运营配置',
+    metricId: '1018905', content: '8 月 26 日起对山东、广东、安徽的本地包运营配置表进行配置，已完成首个 7 天观察周期。', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25',
   },
 ];
 
@@ -130,7 +132,7 @@ const TARGET_GAME_MONTHS = [
   { label: '5月', pc: { users: 2425229, game: 21.465, union: 0.838, total: 22.097 }, android: { users: 5900496, game: 40.169, union: 0.174, total: 40.290 } },
   { label: '6月', pc: { users: 2485239, game: 22.939, union: 0.382, total: 23.225 }, android: { users: 5628923, game: 40.796, union: 0.231, total: 40.965 } },
   { label: '7月', pc: { users: 2649286, game: 25.302, union: 0.421, total: 25.616 }, android: { users: 5721197, game: 41.108, union: 0.179, total: 41.237 } },
-  { label: '8月（1–25日）', pc: { users: 2070739, game: 24.009, union: 0.218, total: 24.171 }, android: { users: 4575829, game: 42.368, union: 0.198, total: 42.514 } },
+  { label: '8月', pc: { users: 2589036, game: 24.059, union: 0.220, total: 24.223 }, android: { users: 5651471, game: 42.290, union: 0.205, total: 42.440 } },
 ];
 
 const ACTIVE_EXPERIMENT_DAILY = [
@@ -189,8 +191,8 @@ function AttributionTable({ items, beforeLabel, afterLabel }) {
 }
 
 function GlobalEventTable() {
-  const all = getSummary('2026-06-20', '2026-08-25');
-  const packagePeriod = getSummary('2026-07-15', '2026-08-25');
+  const all = getSummary('2026-06-20', '2026-09-01');
+  const packagePeriod = getSummary('2026-07-15', '2026-09-01');
   return <div className="globalEventTable" role="table" aria-label="模块事件概览">
     <div className="globalEventHead" role="row"><span>事件</span><span>全期占比</span><span>数据说明</span></div>
     {EVENTS.map(event => { const summary = PACKAGE_EVENTS.some(item => item.id === event.id) ? packagePeriod : all; const note = PACKAGE_EVENTS.some(item => item.id === event.id) ? '7/15起' : '全期'; return <div className="globalEventRow" role="row" key={event.id}><strong role="cell" data-label="事件">{event.id === 'TOTAL_START' ? event.label : `${event.id} · ${event.label}`}</strong><span role="cell" data-label="全期占比">{summary.stats[event.id].rate.toFixed(2)}%</span><span role="cell" data-label="数据说明">{note} {summary.stats[event.id].uv.toLocaleString()} / {summary.users.toLocaleString()}</span></div>; })}
@@ -198,7 +200,7 @@ function GlobalEventTable() {
 }
 
 function GlobalDataPage({ embedded = false }) {
-  const [range, setRange] = useState({ start: '2026-06-20', end: '2026-08-25' });
+  const [range, setRange] = useState({ start: '2026-08-02', end: '2026-09-01' });
   const [appliedRange, setAppliedRange] = useState(range);
   const [eventIds, setEventIds] = useState(['TOTAL_START']);
   const selected = useMemo(() => daily.filter(item => item.date >= appliedRange.start && item.date <= appliedRange.end), [appliedRange]);
@@ -207,8 +209,8 @@ function GlobalDataPage({ embedded = false }) {
   const toggleEvent = id => setEventIds(current => current.includes(id) ? current.filter(value => value !== id) : [...current, id]);
   const period = `${formatDate(appliedRange.start)}–${formatDate(appliedRange.end)}`;
   return <>
-    {!embedded && <header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>总启动与模块点击总览</p></div><span>数据更新至 2026/08/25</span></header>}
-    <Card className="filterCard"><div className="filterCopy"><CalendarDays /><div><b>数据日期</b><span>模块数据有效起始 6/20；7/15 起本地包点击单列展示</span></div></div><DateRangeInput label="数据日期" isLabelHidden value={range} onChange={value => value && setRange(value)} min="2026-06-20" max="2026-08-25" numberOfMonths={1} /><Button label="应用筛选" variant="primary" onClick={() => setAppliedRange(range)} /></Card>
+    {!embedded && <header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>总启动与模块点击总览</p></div><span>数据更新至 2026/09/01</span></header>}
+    <Card className="filterCard"><div className="filterCopy"><CalendarDays /><div><b>数据日期</b><span>模块数据有效起始 6/20；7/15 起本地包点击单列展示</span></div></div><DateRangeInput label="数据日期" isLabelHidden value={range} onChange={value => value && setRange(value)} min="2026-06-20" max="2026-09-01" numberOfMonths={1} /><Button label="应用筛选" variant="primary" onClick={() => setAppliedRange(range)} /></Card>
     <div className="globalMetrics"><Metric label="期间总启动占比" value={`${summary.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${summary.stats.TOTAL_START.uv.toLocaleString()} / ${summary.users.toLocaleString()} · ${period}`} icon={BarChart3} /><Metric label="趋势已选事件" value={eventIds.length ? `${eventIds.length} 项` : '未选择'} helper={selectedEvent ? selectedEvent.label : '支持多选或全部取消'} tone="positive" icon={TrendingUp} /><Metric label="纯新增用户数" value={summary.users.toLocaleString()} helper={`${selected.length} 天 · 模块数据起始 6/20`} icon={FileSearch} /></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>事件趋势</h2><p>{period} · 多事件共用占比纵轴</p></div><details className="eventPicker"><summary>筛选事件 <b>{eventIds.length ? `已选 ${eventIds.length} 项` : '未选择'}</b></summary><div>{EVENTS.map(event => <label key={event.id}><input type="checkbox" checked={eventIds.includes(event.id)} onChange={() => toggleEvent(event.id)} />{event.label}</label>)}</div></details></div><Card className="chartCard"><TrendChart items={selected} eventIds={eventIds} /></Card></section>
     <section className="pageSection"><div className="sectionTitle"><div><h2>模块事件概览</h2><p>按最新完整口径汇总 · 本地包事件自 7/15 起可比</p></div></div><Card className="globalEventCard"><GlobalEventTable /></Card></section>
@@ -276,11 +278,11 @@ function AndroidActiveExperimentReview() {
 }
 
 function PcActiveExperimentReview() {
-  return <section className="pageSection"><div className="sectionTitle"><div><h2>首轮实验复盘</h2><p>PC 活跃用户 · 实验进行中，暂不输出效果结论</p></div></div>
-    <Card className="experimentBrief geoExperimentPlan"><div><span>实验周期</span><b>8/26–9/1</b><small>周三开始配置；下周三收齐 7 天数据后与基线比较。</small></div><div><span>实验前基线</span><b>8/19–8/25 · 24.40%</b><small>进入目标游戏 143,864 / 活跃用户池 589,580。</small></div><div><span>主指标</span><b>进入目标游戏变现率</b><small>变现UV / 老用户池UV；同步观察营收棋牌游戏与联运创角。</small></div></Card>
+  return <section className="pageSection"><div className="sectionTitle"><div><h2>首轮实验复盘</h2><p>PC 活跃用户 · 已完成首个 7 天观察周期</p></div></div>
+    <Card className="experimentBrief geoExperimentPlan"><div><span>实验周期</span><b>8/26–9/1</b><small>周三开始配置，已完成完整 7 天观察。</small></div><div><span>实验前基线</span><b>8/19–8/25 · 24.40%</b><small>进入目标游戏 143,864 / 活跃用户池 589,580。</small></div><div><span>实验期结果</span><b>24.36% · -0.04pp</b><small>与基线基本持平，暂无明确提升效果。</small></div></Card>
     <section className="experimentBlock"><Card className="experimentBrief activeUserExperiment"><div><span>实验模块</span><b>精品游戏分类配置 / 高活跃地区本地热门</b></div><div><span>实验内容 1</span><b>调整精品游戏的扑克、麻将游戏分类配置，提高目标游戏分发权重。</b></div><div><span>实验内容 2</span><b>调整高活跃地区的本地热门配置，提高目标游戏分发权重。</b></div></Card>
-    <div className="reviewCallout activeUserCallout"><b>当前状态：进行中</b><p>本轮包含两项配置同时生效，当前仅锁定实验前基线；未收齐 8/26–9/1 数据前，不判断正负效果。</p></div>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下周复盘标准</h2></div></div><ol className="reviewActions"><li><b>先看进入目标游戏变现率相对基线的变化。</b><span>比较 8/26–9/1 与 8/19–8/25 的整体变现率，作为主结论。</span></li><li><b>再拆营收棋牌游戏与联运创角。</b><span>确认增量是否主要来自目标营收游戏，避免只看整体均值。</span></li><li><b>两项配置同时生效，暂不拆分单项因果。</b><span>若结果正向，下一轮再拆“精品分类”和“高活跃地区本地热门”分别验证。</span></li></ol></section></section>
+    <div className="reviewCallout activeUserCallout"><b>本轮结论：暂无明确效果</b><p>整体变现率 24.40% → 24.36%（-0.04pp），两项配置同时生效，未观察到正向增量；当前不拆分单项因果。</p></div>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>在比鸡恢复趋势下继续观察配置效果。</b><span>PC 月度下降先由分游戏拆解定位至比鸡 7/24 断崖，后与工作室核验确认客服封号；需避免恢复过程干扰配置判断。</span></li><li><b>下一轮拆分两项配置分别验证。</b><span>将精品分类与高活跃地区本地热门分开配置，建立可比较的单项结果。</span></li></ol></section></section>
   </section>;
 }
 
@@ -291,9 +293,9 @@ function TargetGamePage({ platform }) {
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
   const change = latest[platform].total - first[platform].total;
   const monthChange = latest[platform].total - previous[platform].total;
-  const conclusion = isPc ? '8 月为 1–25 日累计，进入营收游戏占比 24.17%，较 7 月回落 1.45pp，仍需待整月数据确认趋势。' : '8 月 1–25 日进入营收游戏占比 42.51%，较 7 月提升 1.28pp，处于年内高位；本地热门第三轮第 5 位改营收棋牌的结果见实验复盘。';
+  const conclusion = isPc ? '8 月完整月进入营收游戏占比 24.22%，较 7 月回落 1.41pp；需在比鸡恢复趋势下继续验证配置效果。' : '8 月完整月进入营收游戏占比 42.44%，较 7 月提升 1.20pp，处于年内高位；本地热门第三轮第 5 位改营收棋牌的结果见实验复盘。';
   return <>
-    <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/08/25</span></header>
+    <header className="pageIntro"><div><h1>{name}分发数据</h1><p>活跃用户进入营收游戏的月度表现</p></div><span>数据更新至 2026/09/01</span></header>
     <div className="activeDistributionTabs" role="tablist" aria-label={`${isPc ? 'PC' : '安卓'}活跃用户分发页签`}><button role="tab" aria-selected={distributionTab === 'overview'} className={distributionTab === 'overview' ? 'selected' : ''} onClick={() => setDistributionTab('overview')}>整体数据</button><button role="tab" aria-selected={distributionTab === 'review'} className={distributionTab === 'review' ? 'selected' : ''} onClick={() => setDistributionTab('review')}>实验复盘</button></div>
     {distributionTab === 'overview' ? <><div className="targetMetrics"><Metric label={`${latest.label}进入营收游戏占比`} value={`${latest[platform].total.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(monthChange)} · ${latest[platform].users.toLocaleString()} 用户池`} tone="positive" icon={TrendingUp} /><Metric label={`1月–${latest.label}变化`} value={formatPp(change)} helper={`${first[platform].total.toFixed(2)}% → ${latest[platform].total.toFixed(2)}%`} tone="positive" icon={BarChart3} /><Metric label={`${latest.label}营收棋牌游戏占比`} value={`${latest[platform].game.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].game - previous[platform].game)}`} icon={TrendingUp} /><Metric label={`${latest.label}联运创角占比`} value={`${latest[platform].union.toFixed(2)}%`} helper={`较 ${previous.label} ${formatPp(latest[platform].union - previous[platform].union)}`} icon={BarChart3} /></div>
     <div className="targetConclusion"><b>月度走势结论</b><p>{conclusion}</p><p>主要变化来自<strong>营收棋牌游戏</strong>；联运创角占比低，暂不是进入营收游戏占比的主要驱动。当前数据只能说明同步走势，未包含版本、城市或游戏位明细，不能直接判定具体策略的因果效果。</p></div>
@@ -309,7 +311,7 @@ function LocalPackageWeeklyChanges() {
 }
 
 function LocalPackageConfigExperiment() {
-  return <section className="pageSection"><div className="sectionTitle"><div><h2>进行中实验 · 运营配置表</h2><p>今日开始配置，暂不输出实验效果结论</p></div></div><Card className="experimentBrief geoExperimentPlan"><div><span>实验地区</span><b>山东、广东、安徽</b><small>三个实验地区的本地包运营配置表已于 8/26 开始配置。</small></div><div><span>对比区间</span><b>配置前 8/19–8/25 · 配置后 8/26–9/1</b><small>下周三收齐配置后 7 天数据，再以同口径比较前后变化。</small></div><div><span>复盘指标</span><b>页面曝光→配置推荐点击</b><small>同步观察页面曝光→算法推荐点击；按实验地区与非实验地区拆分，不将两类点击相加。</small></div></Card></section>;
+  return <section className="pageSection"><div className="sectionTitle"><div><h2>本地包运营配置实验</h2><p>已完成首个 7 天观察周期</p></div></div><Card className="experimentBrief geoExperimentPlan"><div><span>实验地区</span><b>山东、广东、安徽</b><small>三个实验地区的本地包运营配置表于 8/26 开始配置。</small></div><div><span>对比区间</span><b>8/19–8/25 vs 8/26–9/1</b><small>已收齐配置后 7 天数据。</small></div><div><span>复盘指标</span><b>页面曝光→配置推荐点击</b><small>同步观察页面曝光→算法推荐点击；两类点击不相加。</small></div></Card></section>;
 }
 
 function LocalPackageGeoReview() {
@@ -359,7 +361,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const [experimentId, setExperimentId] = useState(scopedExperiments[scopedExperiments.length - 1].id);
   const experiment = EXPERIMENTS.find(item => item.id === experimentId);
   if (experiment.isOngoing) return <>
-    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/25</span></header>}
+    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/09/01</span></header>}
     <Card className="experimentSelector"><div><b>选择实验区间</b><span>本地热门与本地包按周连续展示，具体模块在下方说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
     <LocalPackageConfigExperiment />
     <LocalPackageExperimentProtocol />
@@ -387,7 +389,9 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
   const trendItems = [...before.rows, ...after.rows];
-  const nextSteps = experimentId === 'local-package-weekly-observation'
+  const nextSteps = experimentId === 'local-package-config-cities'
+    ? [{ title: '山东优先复盘配置。', detail: '核对配置游戏、坑位和页面曝光，确认配置点击下降是否来自配置承接。' }, { title: '广东、安徽继续累计样本。', detail: '整体结果稳定前不扩大至更多省份；下周继续按省、市比较配置推荐点击。' }]
+    : experimentId === 'local-package-weekly-observation'
     ? [{ title: '继续按城市观察本地包数据。', detail: '本地热门下降主要是入口迁移信号；以山东、广东、安徽运营配置实验为下一段周度复盘，分别看页面曝光→配置推荐点击及总启动。' }]
     : experimentId === 'local-package-official-launch'
     ? [{ title: '拆分城市观察本地包数据。', detail: '按城市观察本地包各入口点击与总启动变化，定位不同城市的上线表现与后续优化方向。' }]
@@ -403,15 +407,15 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
         ? [{ title: '每个月轮换一次首屏 Banner 素材。', detail: '素材替换已带动首屏 Banner 点击正向提升，后续按月轮换素材并持续观察点击表现。' }]
         : [{ title: '补充本地热门游戏位的明细数据。', detail: '分别看新增棋牌游戏位、减少营收游戏位的曝光、点击与启动贡献。' }, { title: '持续定位游戏模块开始玩的下降原因。', detail: '优先检查承接游戏、排序和点击后的启动链路。' }];
   return <>
-    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/08/25</span></header>}
+    {!embedded && <header className="pageIntro"><div><h1>{title}</h1><p>{subtitle}</p></div><span>数据更新至 2026/09/01</span></header>}
     <Card className="experimentSelector"><div><b>选择实验区间</b><span>本地热门与本地包按周连续展示，具体模块在下方说明</span></div><select value={experimentId} onChange={event => setExperimentId(event.target.value)} aria-label="选择实验区间">{scopedExperiments.map(item => <option value={item.id} key={item.id}>{item.title} · {formatDate(item.start)}–{formatDate(item.end)}</option>)}</select></Card>
     <section className="experimentBlock"><div className="sectionTitle"><div><h2>{experiment.title}</h2><p>{formatDate(experiment.start)}–{formatDate(experiment.end)} · 对比 {formatDate(experiment.beforeStart)}–{formatDate(experiment.beforeEnd)}</p></div></div>
       <Card className="experimentBrief"><div><span>实验模块</span><b>{experiment.module}</b></div><div><span>实验内容</span><b>{experiment.content}</b></div></Card>
-      <div className="reviewCallout"><b>实验效果结论</b>{experimentId === 'local-package-weekly-observation' ? <><p>本周总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 降至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}），属于小幅波动。<strong>不能把本地热门 {formatPp(after.stats['60100102'].rate - before.stats['60100102'].rate)} 判定为总启动下降原因</strong>：它对应本地包地区配置 {formatPp(moduleDelta)}、地区推荐 {formatPp(after.stats['1018904'].rate - before.stats['1018904'].rate)} 的入口迁移。</p><p>本地热门与本地包事件的点击用户会重叠，当前没有“本地入口去重点击”或“入口点击后启动”的承接数据，不能把多个模块相加后归因到总启动。搜索游戏点击 {formatPp(after.stats['60100703'].rate - before.stats['60100703'].rate)} 仅是同步下降，也不能证明是原因。<strong>本轮正确结论：总启动小幅下降，暂无法从全点击数据定位到明确责任模块。</strong></p></> : experimentId === 'local-package-official-launch' ? <><p>本地包正式上线后，首日新用户总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}），上线初期保持稳定。</p><p>展示入口已完成迁移：本地热门从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%，同时本地包地区配置从 {before.stats['1018905'].rate.toFixed(2)}% 升至 {after.stats['1018905'].rate.toFixed(2)}%。各本地包事件的点击用户可能重叠，不能相加为总点击率；当前仅说明点击主要转移到本地包，正式上线数据仍只有 5 天，继续观察稳定性。</p></> : experimentId === 'first-banner-material' ? <><p>素材替换对首屏 Banner 点击有<strong className="positive">正向提升</strong>（0.84% → 1.08%，{formatPp(moduleDelta)}）。</p><p>后续每个月轮换一次首屏 Banner 素材，持续带动首屏 Banner 点击。</p></> : experimentId === 'local-package-prepublish-incident' ? <><p>本地热门全周期从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%（{formatPp(moduleDelta)}），但总启动基本持平（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p><strong>8/8–8/10 为异常期：</strong>本地热门仅 4.79%，本地包广告位推荐升至 7.09%；8/11 本地热门回升至 13.27%。判断为疑似预发本地包版本影响线上、点击转移至本地包，<strong>不纳入正常本地热门实验效果</strong>。</p></> : experimentId === 'local-hot-waiting-package' ? <><p>本周未调整本地热门，因此<strong>不将变化归因于本地热门策略</strong>。本地热门点击基本持平（{formatPp(moduleDelta)}），总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}）。</p><p>最大同步正向模块是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}；同时活动 Banner 出现点击，仍仅作为环境变量。安卓正等待产品本地包版本更新，预计 8 月 10 日上线后才可能出现更明显的数据变化。</p></> : <><p>对实验模块：<strong className={moduleDelta >= 0 ? 'positive' : 'negative'}>{moduleVerdict}</strong>（{experimentMetric.shortLabel} {formatPp(moduleDelta)}）。对总启动：<strong className={totalDelta >= 0 ? 'positive' : 'negative'}>{startupVerdict}</strong>（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p>若总启动变化不是由实验模块带动，当前模块粒度下的最大同步候选是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}。这只是同步信号，不代表因果；模块点击用户可重叠，现有数据无法把总启动变化精确拆到单一模块。</p></>}</div>
+      <div className="reviewCallout"><b>实验效果结论</b>{experimentId === 'local-package-config-cities' ? <><p>总启动 70.63% → 70.13%（-0.50pp），本地包地区配置点击 15.23% → 14.88%（-0.35pp），本轮未观察到整体正向提升。</p><p>城市源表显示：算法推荐点击率 +1.28pp，但配置推荐点击/页面曝光 -0.63pp；山东配置点击率 45.1% → 27.3% 明显走弱，广东 +5.0pp、安徽 +2.6pp 但样本较小。当前不扩大范围，先复盘山东配置，广东、安徽继续累计样本。</p></> : experimentId === 'local-package-weekly-observation' ? <><p>本周总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 降至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}），属于小幅波动。<strong>不能把本地热门 {formatPp(after.stats['60100102'].rate - before.stats['60100102'].rate)} 判定为总启动下降原因</strong>：它对应本地包地区配置 {formatPp(moduleDelta)}、地区推荐 {formatPp(after.stats['1018904'].rate - before.stats['1018904'].rate)} 的入口迁移。</p><p>本地热门与本地包事件的点击用户会重叠，当前没有“本地入口去重点击”或“入口点击后启动”的承接数据，不能把多个模块相加后归因到总启动。搜索游戏点击 {formatPp(after.stats['60100703'].rate - before.stats['60100703'].rate)} 仅是同步下降，也不能证明是原因。<strong>本轮正确结论：总启动小幅下降，暂无法从全点击数据定位到明确责任模块。</strong></p></> : experimentId === 'local-package-official-launch' ? <><p>本地包正式上线后，首日新用户总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}），上线初期保持稳定。</p><p>展示入口已完成迁移：本地热门从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%，同时本地包地区配置从 {before.stats['1018905'].rate.toFixed(2)}% 升至 {after.stats['1018905'].rate.toFixed(2)}%。各本地包事件的点击用户可能重叠，不能相加为总点击率；当前仅说明点击主要转移到本地包，正式上线数据仍只有 5 天，继续观察稳定性。</p></> : experimentId === 'first-banner-material' ? <><p>素材替换对首屏 Banner 点击有<strong className="positive">正向提升</strong>（0.84% → 1.08%，{formatPp(moduleDelta)}）。</p><p>后续每个月轮换一次首屏 Banner 素材，持续带动首屏 Banner 点击。</p></> : experimentId === 'local-package-prepublish-incident' ? <><p>本地热门全周期从 {before.stats['60100102'].rate.toFixed(2)}% 降至 {after.stats['60100102'].rate.toFixed(2)}%（{formatPp(moduleDelta)}），但总启动基本持平（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p><strong>8/8–8/10 为异常期：</strong>本地热门仅 4.79%，本地包广告位推荐升至 7.09%；8/11 本地热门回升至 13.27%。判断为疑似预发本地包版本影响线上、点击转移至本地包，<strong>不纳入正常本地热门实验效果</strong>。</p></> : experimentId === 'local-hot-waiting-package' ? <><p>本周未调整本地热门，因此<strong>不将变化归因于本地热门策略</strong>。本地热门点击基本持平（{formatPp(moduleDelta)}），总启动从 {before.stats.TOTAL_START.rate.toFixed(2)}% 升至 {after.stats.TOTAL_START.rate.toFixed(2)}%（{formatPp(totalDelta)}）。</p><p>最大同步正向模块是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}；同时活动 Banner 出现点击，仍仅作为环境变量。安卓正等待产品本地包版本更新，预计 8 月 10 日上线后才可能出现更明显的数据变化。</p></> : <><p>对实验模块：<strong className={moduleDelta >= 0 ? 'positive' : 'negative'}>{moduleVerdict}</strong>（{experimentMetric.shortLabel} {formatPp(moduleDelta)}）。对总启动：<strong className={totalDelta >= 0 ? 'positive' : 'negative'}>{startupVerdict}</strong>（{before.stats.TOTAL_START.rate.toFixed(2)}% → {after.stats.TOTAL_START.rate.toFixed(2)}%，{formatPp(totalDelta)}）。</p><p>若总启动变化不是由实验模块带动，当前模块粒度下的最大同步候选是<strong>{candidate?.label || '暂无'}</strong>{candidate ? `（${formatPp(candidate.delta)}）` : ''}。这只是同步信号，不代表因果；模块点击用户可重叠，现有数据无法把总启动变化精确拆到单一模块。</p></>}</div>
       {experimentId === 'local-package-weekly-observation' ? <div className="reviewMetrics"><Metric label="总启动变化" value={formatPp(totalDelta)} helper={`${before.stats.TOTAL_START.rate.toFixed(2)}% → ${after.stats.TOTAL_START.rate.toFixed(2)}% · 小幅波动`} tone="negative" icon={TrendingDown} /><Metric label="本地入口变化" value="入口迁移" helper={`本地热门 ${formatPp(after.stats['60100102'].rate - before.stats['60100102'].rate)}；本地包配置 ${formatPp(moduleDelta)}`} tone="neutral" icon={BarChart3} /><Metric label="实验期总启动占比" value={`${after.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${after.stats.TOTAL_START.uv.toLocaleString()} / ${after.users.toLocaleString()} · ${formatDate(experiment.start)}–${formatDate(experiment.end)}`} icon={BarChart3} /><Metric label="可归因模块" value="暂无" helper="缺少本地入口去重及点击后启动承接数据" tone="neutral" icon={FileSearch} /></div> : <div className="reviewMetrics"><Metric label="对实验模块" value={moduleVerdict} helper={`${experimentMetric.shortLabel} ${before.stats[experiment.metricId].rate.toFixed(2)}% → ${after.stats[experiment.metricId].rate.toFixed(2)}% · ${formatPp(moduleDelta)}`} tone={moduleDelta >= 0 ? 'positive' : 'negative'} icon={moduleDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="对总启动" value={startupVerdict} helper={`${before.stats.TOTAL_START.rate.toFixed(2)}% → ${after.stats.TOTAL_START.rate.toFixed(2)}% · ${formatPp(totalDelta)}`} tone={totalDelta >= 0 ? 'positive' : 'negative'} icon={totalDelta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验期总启动占比" value={`${after.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${after.stats.TOTAL_START.uv.toLocaleString()} / ${after.users.toLocaleString()} · ${formatDate(experiment.start)}–${formatDate(experiment.end)}`} icon={BarChart3} /><Metric label="最大同步候选" value={candidate?.label || '暂无'} helper={candidate ? `${formatPp(candidate.delta)} · 仅为候选，不作因果结论` : '暂无同方向变化候选'} tone={candidate ? (candidate.delta >= 0 ? 'positive' : 'negative') : 'neutral'} icon={candidate && candidate.delta >= 0 ? TrendingUp : TrendingDown} /></div>}
       <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>保留本次对比的实验前后区间 · 虚线为实验/观察开始</p></div></div><Card className="chartCard"><TrendChart items={trendItems} eventIds={['TOTAL_START', experiment.metricId]} markerDate={experiment.start} markerLabel={`${formatDate(experiment.start)} ${experimentId.includes('observation') || experimentId === 'local-hot-waiting-package' ? '观察开始' : '实验上线'}`} /></Card></section>
       <section className="pageSection"><div className="sectionTitle"><div><h2>模块归因与问题定位</h2><p>按实验前后变化幅度排序 · 单位：pp</p></div></div><Card className="attributionCard"><AttributionTable items={driverItems} beforeLabel="实验前" afterLabel="实验期" /></Card></section>
-      {after.stats['60100602'].uv > 0 && <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入其他实验模块成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>{bannerDayGap === null ? '实验期无 Banner 点击日，暂无可比拆分' : `Banner 点击日总启动较无点击日高 ${formatPp(bannerDayGap)}；仅为相关性`}</span></aside></Card></section>}
+      {after.stats['60100602'].uv > 0 && experimentId !== 'local-package-config-cities' && <section className="pageSection bannerSection"><div className="sectionTitle"><div><h2>活动 Banner：单列环境变量</h2><p>临时按需投放，不计入其他实验模块成效</p></div></div><Card className="bannerCardV2"><div><span>实验前活动 Banner 点击</span><b>{before.stats['60100602'].rate.toFixed(2)}%</b><small>{before.stats['60100602'].uv.toLocaleString()} UV</small></div><div><span>实验期活动 Banner 点击</span><b>{after.stats['60100602'].rate.toFixed(2)}%</b><small>{after.stats['60100602'].uv.toLocaleString()} UV</small></div><aside><b>{formatPp(bannerDelta)}</b><span>{bannerDayGap === null ? '实验期无 Banner 点击日，暂无可比拆分' : `Banner 点击日总启动较无点击日高 ${formatPp(bannerDayGap)}；仅为相关性`}</span></aside></Card></section>}
       <section className="pageSection"><div className="sectionTitle"><div><h2>{experimentId === 'local-hot-observation' || experimentId === 'local-hot-waiting-package' || experimentId === 'local-package-prepublish-incident' ? '后续本地热门优化建议' : '下一步'}</h2></div></div><ol className="reviewActions">{nextSteps.map(item => <li key={item.title}><b>{item.title}</b><span>{item.detail}</span></li>)}</ol></section>
     </section>
     {showPackageWeeks && <LocalPackageWeeklyChanges />}
@@ -420,7 +424,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
 
 function AndroidNewUserPage() {
   const [tab, setTab] = useState('global');
-  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/08/25 · 本地包分城市数据支持 8/17 起滚动观察</span></header>
+  return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/09/01 · 本地包分城市数据支持 8/17 起滚动观察</span></header>
     <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'review'} className={tab === 'review' ? 'selected' : ''} onClick={() => setTab('review')}>实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button></div>
     {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'review' ? <ReviewPage key="new-user-experiment-review" embedded experimentIds={NEW_USER_EXPERIMENT_IDS} title="实验复盘" subtitle="安卓新用户 · 本地热门与本地包按周统一复盘" /> : <LocalPackageGeoReview />}
   </>;
