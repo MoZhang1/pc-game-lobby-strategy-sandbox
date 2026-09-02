@@ -257,7 +257,7 @@ const ACTIVE_EXPERIMENTS = [
   { id: 'active-local-hot-v1', title: '第一轮 · 营收游戏前移', start: '2026-08-05', end: '2026-08-11', beforeStart: '2026-07-29', beforeEnd: '2026-08-04', baseline: '7/29–8/4', baselineRate: 42.03, baselineHelper: '541,897 / 1,289,395', resultRate: 42.59, resultHelper: '548,462 / 1,287,715', delta: 0.56, content: '营收游戏从第 4、5 位前移至第 3、4 位，第 5 位由棋牌游戏补位；即营收游戏整体前移一位，棋牌游戏向后补一位。', conclusion: '正向。进入营收游戏占比提升 0.56pp，主要来自营收棋牌游戏提升 0.53pp。', next: '保留营收游戏第 3、4 位，继续验证第 5 位替换方案。' },
   { id: 'active-local-hot-v2', title: '第二轮 · 第 5 位改联运游戏', start: '2026-08-12', end: '2026-08-18', beforeStart: '2026-08-05', beforeEnd: '2026-08-11', baseline: '8/5–8/11', baselineRate: 42.59, baselineHelper: '548,462 / 1,287,715', resultRate: 42.47, resultHelper: '543,188 / 1,278,889', delta: -0.12, content: '保持营收游戏在第 3、4 位不变，将第 5 位从棋牌游戏替换为联运游戏。', conclusion: '轻微负向。营收棋牌游戏 -0.05pp、联运创角 -0.09pp，未补足第 5 位替换带来的损失。', next: '先结合第二周观察结果复盘，暂不预设下一轮配置。' },
   { id: 'active-local-hot-v3', title: '第三轮 · 第 5 位联运改营收棋牌', start: '2026-08-19', end: '2026-08-25', beforeStart: '2026-08-12', beforeEnd: '2026-08-18', baseline: '8/12–8/18', baselineRate: 42.47, baselineHelper: '543,188 / 1,278,889', resultRate: 42.71, resultHelper: '545,110 / 1,276,344', delta: 0.24, content: '保持营收游戏第 3、4 位不变，将第 5 位从联运游戏替换为营收棋牌游戏。', conclusion: '正向。进入营收游戏占比 +0.24pp，营收棋牌游戏同步 +0.24pp；联运创角 -0.02pp，符合第 5 位由联运改为营收棋牌后的预期变化。', next: '保持当前第 5 位营收棋牌游戏配置，继续观察稳定性；后续实验配置待确认后再上线。' },
-  { id: 'active-latest-observation', title: '最新观察周 · 保持当前营收棋牌配置', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25', baseline: '8/19–8/25', baselineRate: 42.71, baselineHelper: '545,110 / 1,276,344', resultRate: 42.19, resultHelper: '529,870 / 1,255,792', delta: -0.51, content: '本周未调整本地热门，保持营收游戏第 3、4 位和第 5 位营收棋牌游戏配置。', conclusion: '观察期变现率 -0.51pp；无新增实验配置，不将本周波动归因于本地热门策略。', next: '保持当前配置，等待下一轮明确的单变量实验后再判断策略效果。' },
+  { id: 'active-latest-observation', title: '最新观察周 · 保持当前营收棋牌配置', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25', baseline: '8/19–8/25', baselineRate: 42.71, baselineHelper: '545,110 / 1,276,344', resultRate: 42.19, resultHelper: '529,870 / 1,255,792', delta: -0.51, content: '本周未调整本地热门，保持营收游戏第 3、4 位和第 5 位营收棋牌游戏配置。', conclusion: '观察期变现率 -0.51pp；无新增实验配置，不将本周波动归因于本地热门策略。', next: '周四（9/3）轮换 9 月首屏 Banner 全部素材，后续按素材轮换前后观察点击与进入营收游戏占比。' },
 ];
 
 function ActiveExperimentTrendChart({ items, markerDate }) {
@@ -288,7 +288,7 @@ function AndroidActiveExperimentReview() {
     <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value={`${experiment.baselineRate.toFixed(2)}%`} helper={`${experiment.baseline} · ${experiment.baselineHelper}`} icon={BarChart3} /><Metric label="实验期结果" value={`${experiment.resultRate.toFixed(2)}%`} helper={`${formatDate(experiment.start)}–${formatDate(experiment.end)} · ${experiment.resultHelper}`} tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验变化" value={formatPp(experiment.delta)} helper="变现率（进入营收游戏）" tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /></div>
     <div className="reviewCallout activeUserCallout"><b>本轮结论：{experiment.delta >= 0 ? '正向' : '轻微负向'}</b><p>{experiment.conclusion}</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>{formatDate(experiment.beforeStart)}–{formatDate(experiment.end)} · 虚线为周三实验开始</p></div></div><Card className="chartCard"><ActiveExperimentTrendChart items={comparisonItems} markerDate={experiment.start} /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>按周三开始，观察 7 天</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>{experiment.id === 'active-latest-observation' ? '后续动作按实际配置日记录' : '按周三开始，观察 7 天'}</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
   </section>;
 }
 
@@ -297,7 +297,7 @@ function PcActiveExperimentReview() {
     <Card className="experimentBrief geoExperimentPlan"><div><span>实验周期</span><b>8/26–9/1</b><small>周三开始配置，已完成完整 7 天观察。</small></div><div><span>实验前基线</span><b>8/19–8/25 · 24.40%</b><small>进入目标游戏 143,864 / 活跃用户池 589,580。</small></div><div><span>实验期结果</span><b>24.36% · -0.04pp</b><small>与基线基本持平，暂无明确提升效果。</small></div></Card>
     <section className="experimentBlock"><Card className="experimentBrief activeUserExperiment"><div><span>实验模块</span><b>精品游戏分类配置 / 高活跃地区本地热门</b></div><div><span>实验内容 1</span><b>调整精品游戏的扑克、麻将游戏分类配置，提高目标游戏分发权重。</b></div><div><span>实验内容 2</span><b>调整高活跃地区的本地热门配置，提高目标游戏分发权重。</b></div></Card>
     <div className="reviewCallout activeUserCallout"><b>本轮结论：暂无明确效果</b><p>整体变现率 24.40% → 24.36%（-0.04pp），两项配置同时生效，未观察到正向增量；当前不拆分单项因果。</p></div>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>在比鸡恢复趋势下继续观察配置效果。</b><span>PC 月度下降先由分游戏拆解定位至比鸡 7/24 断崖，后与工作室核验确认客服封号；需避免恢复过程干扰配置判断。</span></li><li><b>下一轮拆分两项配置分别验证。</b><span>将精品分类与高活跃地区本地热门分开配置，建立可比较的单项结果。</span></li></ol></section></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2></div></div><ol className="reviewActions"><li><b>暂无新增配置动作。</b><span>已将比鸡、罗松情况通知对应工作室，等待其 Banner 申请；申请未落地前不追加新的 PC 分发实验。</span></li></ol></section></section>
   </section>;
 }
 
@@ -408,7 +408,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
   const trendItems = [...before.rows, ...after.rows];
   const nextSteps = experimentId === 'local-package-config-cities'
-    ? [{ title: '山东优先复盘配置。', detail: '核对配置游戏、坑位和页面曝光，确认配置点击下降是否来自配置承接。' }, { title: '广东、安徽继续累计样本。', detail: '整体结果稳定前不扩大至更多省份；下周继续按省、市比较配置推荐点击。' }]
+    ? [{ title: '周三（9/2）将本地包运营配置扩展至 10 省。', detail: '浙江、湖北、江苏、山东、广东、安徽、内蒙古、江西、辽宁、山西；以页面曝光→配置推荐点击作为唯一配置效果指标。' }, { title: '按扩展后完整 7 天统一复盘。', detail: '先比较各省配置前后变化，再与未配置地区作环境参照；山东仍需优先核对配置游戏、坑位和页面曝光。' }]
     : experimentId === 'local-package-weekly-observation'
     ? [{ title: '继续按城市观察本地包数据。', detail: '本地热门下降主要是入口迁移信号；以山东、广东、安徽运营配置实验为下一段周度复盘，分别看页面曝光→配置推荐点击及总启动。' }]
     : experimentId === 'local-package-official-launch'
