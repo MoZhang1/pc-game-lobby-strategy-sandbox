@@ -8,6 +8,19 @@ import './astryx-report.css';
 import './astryx-report-overrides.css';
 import { LOCAL_PACKAGE_GEO_DATA, LOCAL_PACKAGE_GEO_PERIODS } from './localPackageGeoData';
 
+// 8/26–9/1 为山东、广东、安徽运营配置的首个完整观察周期；城市明细沿用独立分城市源表按周补充。
+const LATEST_LOCAL_PACKAGE_PERIOD = {
+  id: '2026-08-26_2026-09-01', label: '8/26–9/1（配置实验）', data: {
+    meta: { start: '2026-08-26', end: '2026-09-01', days: 7, rawUnknownProvinceNewUsers: 1420, unmappedNewUsers: 151 },
+    total: { newUsers: 3576, pageExposure: 2250, totalClicks: 864, bannerClicks: 34, algorithmExposure: 2126, algorithmClicks: 310, configuredClicks: 532, adClicks: 155 },
+    provinces: [
+      { province: '山东', status: '有数据', newUsers: 190, pageExposure: 132, totalClicks: 64, bannerClicks: 0, algorithmExposure: 125, algorithmClicks: 27, configuredClicks: 36, adClicks: 10 },
+      { province: '广东', status: '有数据', newUsers: 192, pageExposure: 97, totalClicks: 40, bannerClicks: 0, algorithmExposure: 83, algorithmClicks: 9, configuredClicks: 19, adClicks: 7 },
+      { province: '安徽', status: '有数据', newUsers: 117, pageExposure: 69, totalClicks: 31, bannerClicks: 0, algorithmExposure: 67, algorithmClicks: 10, configuredClicks: 13, adClicks: 4 },
+    ], cities: [],
+  },
+};
+
 const BASE_EVENTS = [
   { id: 'TOTAL_START', label: '总启动（用户启动＋本地包相关点击）', shortLabel: '总启动' },
   { id: '60100102', label: '本地热门游戏点击', shortLabel: '本地热门游戏点击' },
@@ -140,6 +153,7 @@ const ACTIVE_EXPERIMENT_DAILY = [
   ['2026-08-05',184423,77673,444,78001], ['2026-08-06',184409,77604,595,78033], ['2026-08-07',183060,77234,590,77674], ['2026-08-08',182584,77749,345,77981], ['2026-08-09',184082,78461,547,78865], ['2026-08-10',184537,78793,383,79078], ['2026-08-11',184620,78528,409,78830],
   ['2026-08-12',185143,78714,527,79093], ['2026-08-13',183763,78514,390,78799], ['2026-08-14',183076,77330,319,77561], ['2026-08-15',181932,76998,241,77180], ['2026-08-16',181964,77206,217,77352], ['2026-08-17',180787,75562,250,75754], ['2026-08-18',182224,77282,221,77449],
   ['2026-08-19',181574,77260,216,77476], ['2026-08-20',182056,77571,282,77853], ['2026-08-21',182314,77648,292,77940], ['2026-08-22',182142,77708,198,77906], ['2026-08-23',182833,78003,262,78265], ['2026-08-24',183198,78061,363,78424], ['2026-08-25',182227,77520,346,77846],
+  ['2026-08-26',180351,75231,290,75429], ['2026-08-27',181058,76247,316,76468], ['2026-08-28',180588,76025,455,76352], ['2026-08-29',177671,74896,461,75228], ['2026-08-30',179853,76371,543,76761], ['2026-08-31',176121,72545,441,72880], ['2026-09-01',180150,76445,434,76752],
 ].map(item => Array.isArray(item) ? (() => { const [date, users, chess, union, total] = item; return { date, label: `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`, users, chess: chess / users * 100, union: union / users * 100, total: total / users * 100 }; })() : item);
 
 function getSummary(start, end) {
@@ -243,6 +257,7 @@ const ACTIVE_EXPERIMENTS = [
   { id: 'active-local-hot-v1', title: '第一轮 · 营收游戏前移', start: '2026-08-05', end: '2026-08-11', beforeStart: '2026-07-29', beforeEnd: '2026-08-04', baseline: '7/29–8/4', baselineRate: 42.03, baselineHelper: '541,897 / 1,289,395', resultRate: 42.59, resultHelper: '548,462 / 1,287,715', delta: 0.56, content: '营收游戏从第 4、5 位前移至第 3、4 位，第 5 位由棋牌游戏补位；即营收游戏整体前移一位，棋牌游戏向后补一位。', conclusion: '正向。进入营收游戏占比提升 0.56pp，主要来自营收棋牌游戏提升 0.53pp。', next: '保留营收游戏第 3、4 位，继续验证第 5 位替换方案。' },
   { id: 'active-local-hot-v2', title: '第二轮 · 第 5 位改联运游戏', start: '2026-08-12', end: '2026-08-18', beforeStart: '2026-08-05', beforeEnd: '2026-08-11', baseline: '8/5–8/11', baselineRate: 42.59, baselineHelper: '548,462 / 1,287,715', resultRate: 42.47, resultHelper: '543,188 / 1,278,889', delta: -0.12, content: '保持营收游戏在第 3、4 位不变，将第 5 位从棋牌游戏替换为联运游戏。', conclusion: '轻微负向。营收棋牌游戏 -0.05pp、联运创角 -0.09pp，未补足第 5 位替换带来的损失。', next: '先结合第二周观察结果复盘，暂不预设下一轮配置。' },
   { id: 'active-local-hot-v3', title: '第三轮 · 第 5 位联运改营收棋牌', start: '2026-08-19', end: '2026-08-25', beforeStart: '2026-08-12', beforeEnd: '2026-08-18', baseline: '8/12–8/18', baselineRate: 42.47, baselineHelper: '543,188 / 1,278,889', resultRate: 42.71, resultHelper: '545,110 / 1,276,344', delta: 0.24, content: '保持营收游戏第 3、4 位不变，将第 5 位从联运游戏替换为营收棋牌游戏。', conclusion: '正向。进入营收游戏占比 +0.24pp，营收棋牌游戏同步 +0.24pp；联运创角 -0.02pp，符合第 5 位由联运改为营收棋牌后的预期变化。', next: '保持当前第 5 位营收棋牌游戏配置，继续观察稳定性；后续实验配置待确认后再上线。' },
+  { id: 'active-latest-observation', title: '最新观察周 · 保持当前营收棋牌配置', start: '2026-08-26', end: '2026-09-01', beforeStart: '2026-08-19', beforeEnd: '2026-08-25', baseline: '8/19–8/25', baselineRate: 42.71, baselineHelper: '545,110 / 1,276,344', resultRate: 42.19, resultHelper: '529,870 / 1,255,792', delta: -0.51, content: '本周未调整本地热门，保持营收游戏第 3、4 位和第 5 位营收棋牌游戏配置。', conclusion: '观察期变现率 -0.51pp；无新增实验配置，不将本周波动归因于本地热门策略。', next: '保持当前配置，等待下一轮明确的单变量实验后再判断策略效果。' },
 ];
 
 function ActiveExperimentTrendChart({ items, markerDate }) {
@@ -315,10 +330,11 @@ function LocalPackageConfigExperiment() {
 }
 
 function LocalPackageGeoReview() {
-  const [periodId, setPeriodId] = useState('2026-08-18_2026-08-25');
+  const geoPeriods = [...LOCAL_PACKAGE_GEO_PERIODS, LATEST_LOCAL_PACKAGE_PERIOD];
+  const [periodId, setPeriodId] = useState('2026-08-26_2026-09-01');
   const [province, setProvince] = useState('全部');
   const [provinceScope, setProvinceScope] = useState('全部');
-  const selectedPeriod = LOCAL_PACKAGE_GEO_PERIODS?.find(item => item.id === periodId) || { id: '2026-08-17_2026-08-24', label: '8/17–8/24', data: LOCAL_PACKAGE_GEO_DATA };
+  const selectedPeriod = geoPeriods.find(item => item.id === periodId) || { id: '2026-08-17_2026-08-24', label: '8/17–8/24', data: LOCAL_PACKAGE_GEO_DATA };
   const { meta, total, provinces, cities } = selectedPeriod.data;
   const rate = (numerator, denominator) => denominator ? `${(numerator / denominator * 100).toFixed(2)}%` : '—';
   const numericRate = (numerator, denominator) => denominator ? numerator / denominator * 100 : null;
@@ -342,7 +358,7 @@ function LocalPackageGeoReview() {
   const priorityProvinces = largeSample.filter(item => insightFor(item).group === '优先优化' || insightFor(item).group === '待优化').map(item => item.province);
   return <section className="localPackageGeoReview">
     <section className="pageSection"><div className="sectionTitle"><div><h2>本地包地区分发总览</h2><p>{formatDate(meta.start)}–{formatDate(meta.end)} · 按新增用户口径汇总</p></div></div>
-      <Card className="geoToolbar"><div><span>数据时间区间</span><b>{formatDate(meta.start)}–{formatDate(meta.end)}（{meta.days} 天）</b><small>自 8/17 起按滚动 8 天观察省、市数据</small></div><label className="eventSelect">观察区间<select value={periodId} onChange={event => { setPeriodId(event.target.value); setProvince('全部'); setProvinceScope('全部'); }} aria-label="选择本地包分城市观察区间">{LOCAL_PACKAGE_GEO_PERIODS.map(item => <option value={item.id} key={item.id}>{item.label}</option>)}</select></label><label className="eventSelect">省份结论筛选<select value={provinceScope} onChange={event => setProvinceScope(event.target.value)} aria-label="选择省份结论筛选"><option value="全部">全部省份</option><option value="表现较好">表现较好</option><option value="稳定观察">稳定观察</option><option value="待优化">待优化</option><option value="优先优化">优先优化</option><option value="低样本观察">低样本观察</option><option value="无数据">无数据</option></select></label></Card>
+      <Card className="geoToolbar"><div><span>数据时间区间</span><b>{formatDate(meta.start)}–{formatDate(meta.end)}（{meta.days} 天）</b><small>自 8/17 起按滚动周期观察省、市数据</small></div><label className="eventSelect">观察区间<select value={periodId} onChange={event => { setPeriodId(event.target.value); setProvince('全部'); setProvinceScope('全部'); }} aria-label="选择本地包分城市观察区间">{geoPeriods.map(item => <option value={item.id} key={item.id}>{item.label}</option>)}</select></label><label className="eventSelect">省份结论筛选<select value={provinceScope} onChange={event => setProvinceScope(event.target.value)} aria-label="选择省份结论筛选"><option value="全部">全部省份</option><option value="表现较好">表现较好</option><option value="稳定观察">稳定观察</option><option value="待优化">待优化</option><option value="优先优化">优先优化</option><option value="低样本观察">低样本观察</option><option value="无数据">无数据</option></select></label></Card>
       <div className="reviewMetrics geoMetrics"><Metric label="页面曝光UV" value={total.pageExposure.toLocaleString()} helper={`${total.newUsers.toLocaleString()} 新增用户中的本地包页面曝光`} icon={BarChart3} /><Metric label="页面曝光→算法推荐点击" value={rate(total.algorithmClicks, total.pageExposure)} helper={`${total.algorithmClicks.toLocaleString()} / ${total.pageExposure.toLocaleString()} · 本页统一分母`} tone="positive" icon={TrendingUp} /><Metric label="页面曝光→配置推荐点击" value={rate(total.configuredClicks, total.pageExposure)} helper={`${total.configuredClicks.toLocaleString()} / ${total.pageExposure.toLocaleString()} · 本页统一分母`} tone="positive" icon={TrendingUp} /><Metric label="地域可归属率" value={rate(classifiedUsers, total.newUsers)} helper={`按城市补回真实省份；${meta.unmappedNewUsers} 新增仍为未知城市`} icon={FileSearch} /></div>
       <div className="reviewCallout geoCallout"><b>地域补全说明</b><p>原始数据中“未知省份”覆盖 {meta.rawUnknownProvinceNewUsers.toLocaleString()} 名新增用户（{rate(meta.rawUnknownProvinceNewUsers, total.newUsers)}）。已按城市映射回真实省份；仅“未知城市”{meta.unmappedNewUsers} 名（{rate(meta.unmappedNewUsers, total.newUsers)}）保留为未归属，未计入任何省份，也不按 0 转化处理。台湾本期无数据。</p></div>
       <div className="reviewCallout geoConclusion"><b>省级结论</b><p>本页仅按页面曝光后的两类推荐点击判断：全量<strong>算法推荐点击率 {rate(total.algorithmClicks, total.pageExposure)}</strong>、<strong>配置推荐点击率 {rate(total.configuredClicks, total.pageExposure)}</strong>。在新增≥100的省份中，<strong>{topProvinces.join('、') || '暂无'}</strong>两类点击均较好，可保留规则并提炼城市样本。<strong>{priorityProvinces.join('、') || '暂无'}</strong>需优先优化：算法点击弱先调候选池/城市权重，配置点击弱先调配置游戏和排序。</p></div>
