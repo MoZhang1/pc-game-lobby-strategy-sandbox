@@ -378,6 +378,7 @@ function LocalPackageGeoReview() {
   const classifiedUsers = total.newUsers - meta.unmappedNewUsers;
   const benchmark = { configured: numericRate(total.configuredClicks, total.pageExposure) };
   const insightFor = item => {
+    if (item.province === '未知') return { group: '待归属', issue: '城市归属缺失，不参与省份优劣判断', action: '补齐城市归属后再判断配置效果。' };
     if (selectedPeriod.id === '2026-08-26_2026-09-01') {
       if (item.province === '山东') return { group: '优先优化', issue: '配置推荐点击较对照期 -17.8pp', action: '优先复盘配置游戏、坑位和页面曝光，不按当前绝对值判定为正向。' };
       if (item.province === '广东') return { group: '稳定观察', issue: '配置推荐点击较对照期 +5.0pp', action: '继续累计样本；稳定前不扩大到更多省份。' };
