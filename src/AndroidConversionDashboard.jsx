@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import AndroidChannelComparison from './AndroidChannelComparison';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { DateRangeInput } from '@astryxdesign/core/DateRangeInput';
@@ -482,8 +483,8 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
 function AndroidNewUserPage() {
   const [tab, setTab] = useState('global');
   return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>全局数据至 2026/09/06 · 本地包分城市数据支持 8/17 起滚动观察</span></header>
-    <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'review'} className={tab === 'review' ? 'selected' : ''} onClick={() => setTab('review')}>实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button></div>
-    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'review' ? <ReviewPage key="new-user-experiment-review" embedded experimentIds={NEW_USER_EXPERIMENT_IDS} title="实验复盘" subtitle="安卓新用户 · 本地热门与本地包按周统一复盘" /> : <LocalPackageGeoReview />}
+    <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'review'} className={tab === 'review' ? 'selected' : ''} onClick={() => setTab('review')}>实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button><button role="tab" aria-selected={tab === 'channels'} className={tab === 'channels' ? 'selected' : ''} onClick={() => setTab('channels')}>渠道对比</button></div>
+    {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'review' ? <ReviewPage key="new-user-experiment-review" embedded experimentIds={NEW_USER_EXPERIMENT_IDS} title="实验复盘" subtitle="安卓新用户 · 本地热门与本地包按周统一复盘" /> : tab === 'channels' ? <AndroidChannelComparison /> : <LocalPackageGeoReview />}
   </>;
 }
 
