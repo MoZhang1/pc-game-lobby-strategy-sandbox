@@ -1,4 +1,5 @@
 import React from 'react';
+import { NEXT_NEW_USER_PLAN } from './distributionNextPlans';
 import data from './distributionWeeklyData';
 import './android-channel.css';
 const provinces=['浙江','湖北','江苏','山东','广东','安徽','内蒙古','江西','辽宁','山西'];
@@ -22,6 +23,6 @@ export default function DistributionWeeklyDiagnosis({geoOnly=false}){
     <div className="channelTableWrap"><table><thead><tr><th>省份</th><th>配置前点击 / 曝光</th><th>配置后点击 / 曝光</th><th>变化</th><th>复盘结论</th></tr></thead><tbody>{provinces.map(p=>{const b=data.before.find(r=>r.province===p),a=data.after.find(r=>r.province===p);const delta=100*a.configuredClicks/a.pageExposure-100*b.configuredClicks/b.pageExposure;return <tr key={p}><th>{p}</th><td>{rate(b.configuredClicks,b.pageExposure)}<small>{b.configuredClicks}/{b.pageExposure}</small></td><td>{rate(a.configuredClicks,a.pageExposure)}<small>{a.configuredClicks}/{a.pageExposure}</small></td><td style={{color:delta>=0?'#07866e':'#ca4d55'}}>{pp(delta)}</td><td>{delta>=0?'点击率提升，观察稳定性':'点击率下降，优先复核配置与城市分布'}{a.pageExposure<100?'；曝光不足100，样本有限':''}</td></tr>})}</tbody></table></div>
     <p><b>9/7 地区排查：</b>配置点击 / 页面曝光较前 7 日从25.14%降至19.71%。广东为2/29（6.90%），低于基线26.63%，是按当前曝光估算的最大配置点击缺口地区（约5.7次）；山东、辽宁、内蒙古也下降。广州1/13，样本有限，需核对实际展示，不能单凭一天判定规则失败。</p>
     <p>省份结构标准化显示，下降主要来自省内点击率变弱，而不是单纯更多用户流入低转化省份。算法推荐只作为环境指标，不用于评价运营配置。</p>
-    <p><b>下一步：</b>本轮分析供运营确认，暂不自动安排回退、扩量或新实验。</p></div>
+    <p><b>下一步：</b>{NEXT_NEW_USER_PLAN}</p></div>
   </section>;
 }
