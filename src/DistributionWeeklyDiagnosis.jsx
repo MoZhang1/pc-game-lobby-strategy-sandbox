@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NEXT_NEW_USER_PLAN } from './distributionNextPlans';
+import { LAST_NEW_USER_AD_ACTION, NEXT_NEW_USER_PLAN } from './distributionNextPlans';
 import data from './distributionWeeklyData';
 import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
 import { ANDROID_NEW_USER_EXCLUSIONS } from './androidNewUserExclusions';
@@ -20,7 +20,7 @@ const measures = [
   ['本地包总点击 / 新增', 'totalClicks', 'newUsers'],
   ['本地包总点击 / 页面曝光', 'totalClicks', 'pageExposure'],
   ['算法推荐点击率', 'algorithmClicks', 'algorithmExposure'],
-  ['广告位推荐点击率', 'adClicks', 'pageExposure'],
+  ['广告位推荐点击 / 页面曝光', 'adClicks', 'pageExposure'],
 ];
 
 function reviewFor(a, b) {
@@ -74,7 +74,8 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false }) {
 
   return <section className="channelCompare weeklyDiagnosis">
     <div className="channelPanel">
-      <h2>本地包运营配置复盘 · 9/9–9/15</h2>
+      <h2>本地包运营配置与广告位推荐复盘 · 9/9–9/15</h2>
+      <p>{LAST_NEW_USER_AD_ACTION}</p>
       <p><b>9/12 数据已修复并纳入统计。</b>9/2–9/8 与 9/9–9/15 均为完整 7 天，按相同星期构成比较。</p>
       <p><b>配置优先：{names(priority)}；页面到达优先：{names(reachPriority)}。</b>共有 {declines.length} 个已归属省份配置点击率下降，下面按下降幅度、曝光样本和问题环节列出建议。</p>
     </div>
@@ -86,7 +87,8 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false }) {
         <tr><th>总启动占比</th><td><MetricCell row={{ start: newBefore.events.TOTAL_START.uv, users: newBefore.users }} numerator="start" denominator="users" /></td><td><MetricCell row={{ start: newAfter.events.TOTAL_START.uv, users: newAfter.users }} numerator="start" denominator="users" /></td><td>{pp(newAfter.events.TOTAL_START.rate - newBefore.events.TOTAL_START.rate)}</td></tr>
         {measures.map(([name, n, d]) => <tr key={n + d}><th>{name}</th><td><MetricCell row={beforeTotal} numerator={n} denominator={d} /></td><td><MetricCell row={afterTotal} numerator={n} denominator={d} /></td><td className={delta(afterTotal, beforeTotal, n, d) < 0 ? 'negative' : 'positive'}>{pp(delta(afterTotal, beforeTotal, n, d))}</td></tr>)}
       </tbody></table></div>
-      <p>周合计为每日 UV 之和，非跨日去重人数；各类点击用户可重叠。9/16 底部推荐位更换为美女捕鱼、罗松、掼蛋、比鸡后，继续观察对应点击和总启动承接。</p>
+      <p><b>广告位推荐下降，本周继续换游戏。</b>点击 UV {beforeTotal.adClicks} → {afterTotal.adClicks}；点击 / 页面曝光 {rate(beforeTotal.adClicks, beforeTotal.pageExposure)} → {rate(afterTotal.adClicks, afterTotal.pageExposure)}（{pp(delta(afterTotal, beforeTotal, 'adClicks', 'pageExposure'))}），点击 / 新增 {rate(beforeTotal.adClicks, newBefore.users)} → {rate(afterTotal.adClicks, newAfter.users)}。具体生效日未记录，当前按完整周前后比较。</p>
+      <p>周合计为每日 UV 之和，非跨日去重人数；各类点击用户可重叠。广告位比例以本地包页面曝光为分母，源表没有独立的广告位曝光数据。</p>
     </div>
     <div className="channelPanel"><h3>配置地区分组对比</h3>
       <div className="channelTableWrap"><table aria-label="本地包配置地区分组对比"><thead><tr><th>地区组</th><th>新增 UV 前→后</th><th>页面到达 前→后</th><th>配置点击 前</th><th>配置点击 后</th><th>配置变化</th></tr></thead><tbody>{groups.map(g => <tr key={g.name}><th>{g.name}</th><td>{g.before.newUsers} → {g.after.newUsers}</td><td>{rate(g.before.pageExposure, g.before.newUsers)} → {rate(g.after.pageExposure, g.after.newUsers)}</td><td><MetricCell row={g.before} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={g.after} numerator="configuredClicks" denominator="pageExposure" /></td><td>{pp(delta(g.after, g.before, 'configuredClicks', 'pageExposure'))}</td></tr>)}</tbody></table></div>

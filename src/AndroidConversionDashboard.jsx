@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import { NEW_USER_POPUP, NEW_USER_POPUP_UV } from './androidNewUserPopupData';
 import AndroidChannelComparison from './AndroidChannelComparison';
 import DistributionWeeklyDiagnosis from './DistributionWeeklyDiagnosis';
-import { NEXT_NEW_USER_PLAN, NEXT_ANDROID_ACTIVE_PLAN, NEXT_PC_ACTIVE_PLAN } from './distributionNextPlans';
+import { LAST_NEW_USER_AD_ACTION, NEXT_NEW_USER_PLAN, NEXT_ANDROID_ACTIVE_PLAN, NEXT_PC_ACTIVE_PLAN } from './distributionNextPlans';
 import { Button } from '@astryxdesign/core/Button';
 import { Card } from '@astryxdesign/core/Card';
 import { DateRangeInput } from '@astryxdesign/core/DateRangeInput';
@@ -61,7 +61,7 @@ const formatDate = value => value.replace('2026-', '').replace('-', '/').replace
 const formatPp = value => `${value >= 0 ? '+' : ''}${value.toFixed(2)}pp`;
 
 const EXPERIMENTS = [
-  { id: 'local-package-september15', observation: true, title: '周度复盘 · 本地包运营配置', module: '本地包运营配置', metricId: '1018905', start: '2026-09-09', end: '2026-09-15', beforeStart: '2026-09-02', beforeEnd: '2026-09-08', content: '9/12 数据已修复并纳入统计。9/2–9/8 与 9/9–9/15 均按完整 7 天比较，恢复相同星期构成的周环比。', analysis: '完整周总启动 2,370 / 3,440 = 68.90% → 2,327 / 3,397 = 68.50%（-0.39pp）；页面到达率 62.56%→62.44%（-0.12pp），基本持平。配置点击率 24.26%→23.90%（-0.35pp），本地包总点击 / 新增 24.19%→23.02%（-1.17pp）。浙江、江苏、广东优先复核配置游戏与排序，辽宁小幅下降继续跟踪；湖南先排查页面到达。以上为周度变化线索，不能单独归因于配置调整。' },
+  { id: 'local-package-september15', observation: true, title: '周度复盘 · 本地包运营配置与广告位推荐', module: '本地包运营配置、广告位推荐', metricId: '1018905', start: '2026-09-09', end: '2026-09-15', beforeStart: '2026-09-02', beforeEnd: '2026-09-08', content: `${LAST_NEW_USER_AD_ACTION}具体生效日未记录；9/12 数据已修复，9/2–9/8 与 9/9–9/15 均按完整 7 天比较。`, analysis: '完整周总启动 2,370 / 3,440 = 68.90% → 2,327 / 3,397 = 68.50%（-0.39pp）；页面到达率 62.56%→62.44%（-0.12pp），基本持平。配置点击率 24.26%→23.90%（-0.35pp），本地包总点击 / 新增 24.19%→23.02%（-1.17pp）。浙江、江苏、广东优先复核配置游戏与排序，辽宁小幅下降继续跟踪；湖南先排查页面到达。广告位推荐点击 UV 178→140，点击 / 页面曝光 8.27%→6.60%（-1.67pp），本周继续更换游戏。以上为完整周变化，不能单独归因于配置调整。' },
   {
     id: 'local-hot-v1', title: '实验 1 · 本地热门优化', module: '本地热门',
     metricId: '60100102', content: '根据各市实际新增游戏排序，优化本地热门推荐排序。', start: '2026-07-08', end: '2026-07-14', beforeStart: '2026-07-01', beforeEnd: '2026-07-07',
@@ -196,7 +196,7 @@ function GlobalDataPage({ embedded = false }) {
     <div className="globalMetrics"><Metric label="期间总启动占比" value={formatRate(summary.stats.TOTAL_START.rate)} helper={summary.rows.length ? `${summary.stats.TOTAL_START.uv.toLocaleString()} / ${summary.users.toLocaleString()} · ${period}` : '无可用数据 · 异常日已排除'} icon={BarChart3} /><Metric label="趋势已选事件" value={eventIds.length ? `${eventIds.length} 项` : '未选择'} helper={selectedEvent ? selectedEvent.label : '支持多选或全部取消'} tone="positive" icon={TrendingUp} /><Metric label="纯新增用户数" value={summary.rows.length ? summary.users.toLocaleString() : '—'} helper={`有效 ${summary.rows.length} 天${selected.length > summary.rows.length ? ` · 排除 ${selected.length - summary.rows.length} 天` : ''}`} icon={FileSearch} /></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>事件趋势</h2><p>{period} · 多事件共用占比纵轴</p></div><details className="eventPicker"><summary>筛选事件 <b>{eventIds.length ? `已选 ${eventIds.length} 项` : '未选择'}</b></summary><div>{EVENTS.map(event => <label key={event.id}><input type="checkbox" checked={eventIds.includes(event.id)} onChange={() => toggleEvent(event.id)} />{event.label}</label>)}</div></details></div><Card className="chartCard"><TrendChart items={selected} eventIds={eventIds} /></Card></section>
     <div className="reviewCallout"><b>新增事件：新用户首屏弹窗</b><p>8/10 新增；源表 8/10 缺少记录，8/11–9/15 源表有 36 天记录，均已纳入统计。趋势中的未上线和缺少记录均留空；概览占比使用有效记录日的点击 UV 合计 / 同期新增用户 UV 合计。该占比不是弹窗曝光后的点击率，各事件用户可重叠，不能相加作为总启动。</p></div>
-    <div className="reviewCallout"><b>最新完整周：9/9–9/15 · 9/12 已补齐</b><p>9/12 新用户与分城市数据已核对并恢复。本期完整 7 天，总启动 2,327 / 3,397 = 68.50%；前周完整 7 天为 68.90%，变化 -0.39pp。重点复核浙江、江苏、广东配置与湖南页面到达。完整分析见“实验复盘”和“本地包分城市数据”。</p><p>{NEXT_NEW_USER_PLAN}</p></div>
+    <div className="reviewCallout"><b>最新完整周：9/9–9/15 · 9/12 已补齐</b><p>9/12 新用户与分城市数据已核对并恢复。本期完整 7 天，总启动 2,327 / 3,397 = 68.50%；前周完整 7 天为 68.90%，变化 -0.39pp。广告位推荐点击 / 页面曝光 8.27%→6.60%（-1.67pp），本周继续换游戏；浙江、江苏、广东列入本地包优化待办。完整分析见“实验复盘”和“本地包分城市数据”。</p><p>{NEXT_NEW_USER_PLAN}</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>模块事件概览</h2><p>点击 UV / 同期新增用户 UV · 本地包自 7/15 起；新用户弹窗自 8/11 起有记录</p></div></div><Card className="globalEventCard"><GlobalEventTable /></Card></section>
   </>;
 }
@@ -268,7 +268,7 @@ function AndroidActiveExperimentReview() {
     <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value={`${experiment.baselineRate.toFixed(2)}%`} helper={`${experiment.baseline} · ${experiment.baselineHelper}`} icon={BarChart3} /><Metric label="实验期结果" value={`${experiment.resultRate.toFixed(2)}%`} helper={`${formatDate(experiment.start)}–${formatDate(experiment.end)} · ${experiment.resultHelper}`} tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验变化" value={formatPp(experiment.delta)} helper="变现率（进入营收游戏）" tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /></div>
     <div className="reviewCallout activeUserCallout"><b>本轮结论：{experiment.verdict || (experiment.id === 'active-banner-september' ? '整体正向，素材因果待验证' : experiment.delta >= 0 ? '正向' : '轻微负向')}</b><p>{experiment.conclusion}</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>{formatDate(experiment.beforeStart)}–{formatDate(experiment.end)} · 虚线为实际配置日或观察周分界</p></div></div><Card className="chartCard"><ActiveExperimentTrendChart items={comparisonItems} markerDate={experiment.markerDate || experiment.start} ariaLabel="安卓活跃用户定向分发实验前后趋势" /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>{experiment.id === 'active-september15' ? '计划待定，以下为分析建议' : experiment.id === 'active-banner-september' ? '该观察周无新增实验'  : experiment.id === 'active-latest-observation' ? '后续动作按实际配置日记录' : '按周三开始，观察 7 天'}</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>{experiment.id === 'active-september15' ? '9/16–9/22 无新增事项' : experiment.id === 'active-banner-september' ? '该观察周无新增实验'  : experiment.id === 'active-latest-observation' ? '后续动作按实际配置日记录' : '按周三开始，观察 7 天'}</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
   </section>;
 }
 
@@ -283,7 +283,7 @@ function PcActiveExperimentReview() {
     <div className="reviewMetrics activeUserReviewMetrics"><Metric label="实验前基线" value={`${experiment.baselineRate.toFixed(2)}%`} helper={`${experiment.baseline} · ${experiment.baselineHelper}`} icon={BarChart3} /><Metric label="实验期结果" value={`${experiment.resultRate.toFixed(2)}%`} helper={`${formatDate(experiment.start)}–${formatDate(experiment.end)} · ${experiment.resultHelper}`} tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /><Metric label="实验变化" value={formatPp(experiment.delta)} helper="变现率（进入营收游戏）" tone={tone} icon={experiment.delta >= 0 ? TrendingUp : TrendingDown} /></div>
     <div className="reviewCallout activeUserCallout"><b>本轮结论：{experiment.verdict || (experiment.delta >= 0 ? '正向' : '暂无明确效果')}</b><p>{experiment.conclusion}</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>实验前后趋势</h2><p>{formatDate(experiment.beforeStart)}–{formatDate(experiment.end)} · 虚线为实际配置日或观察周分界</p></div></div><Card className="chartCard"><ActiveExperimentTrendChart items={comparisonItems} markerDate={experiment.markerDate || experiment.start} markerLabel={experiment.id === 'pc-september15' ? '观察周开始' : '实验开始'} ariaLabel="PC 活跃用户定向分发实验周期趋势" /></Card></section>
-    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>计划待定，以下为分析建议</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
+    <section className="pageSection"><div className="sectionTitle"><div><h2>下一步</h2><p>{experiment.id === 'pc-september15' ? '9/16–9/22 已确认待办' : '按对应观察周记录后续安排'}</p></div></div><ol className="reviewActions"><li><b>{experiment.next}</b></li></ol></section></section>
   </section>;
 }
 
@@ -414,7 +414,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
   const trendItems = [...before.trendRows, ...after.trendRows];
-  const nextSteps = ['local-package-september15', 'local-package-ten-provinces'].includes(experimentId) ? [{ title: '本周确定动作与待定建议', detail: NEXT_NEW_USER_PLAN }] : experimentId === 'total-start-dip-sep4'
+  const nextSteps = ['local-package-september15', 'local-package-ten-provinces'].includes(experimentId) ? [{ title: '本周待办 · 9/16–9/22', detail: NEXT_NEW_USER_PLAN }] : experimentId === 'total-start-dip-sep4'
     ? [{ title: '优先核查游戏模块开始玩的曝光、排序与承接启动链路。', detail: '9/4 该模块从前 7 日的 20.76% 降至 17.55%（-3.21pp），是当日最强的同步负向模块；核对当天是否有坑位、游戏供给、跳转或启动失败异常。' }, { title: '同步核查搜索游戏链路与流量结构。', detail: '搜索游戏点击较前 7 日 -2.38pp；需补充点击用户到启动用户的承接明细和渠道/版本拆分，才能确认对总启动的真实贡献。' }, { title: '本地包继续按配置推荐点击观察。', detail: '9/4 本地包地区配置 +2.01pp、地区推荐 +1.77pp，当前不支持“本地包走弱导致下跌”的判断。' }]
     : experimentId === 'local-package-config-cities'
     ? [{ title: '周三（9/2）将本地包运营配置扩展至 10 省。', detail: '浙江、湖北、江苏、山东、广东、安徽、内蒙古、江西、辽宁、山西；以页面曝光→配置推荐点击作为唯一配置效果指标。' }, { title: '按扩展后完整 7 天统一复盘。', detail: '先比较各省配置前后变化，再与未配置地区作环境参照；山东仍需优先核对配置游戏、坑位和页面曝光。' }]
