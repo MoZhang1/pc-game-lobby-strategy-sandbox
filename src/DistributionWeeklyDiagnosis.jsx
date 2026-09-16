@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NEXT_NEW_USER_PLAN } from './distributionNextPlans';
 import data from './distributionWeeklyData';
+import { ANDROID_NEW_USER_EXCLUSIONS } from './androidNewUserExclusions';
 import './android-channel.css';
 
 const rate = (n, d) => d ? (100 * n / d).toFixed(2) + '%' : '—';
@@ -23,7 +24,7 @@ export default function DistributionWeeklyDiagnosis({geoOnly=false}) {
   const [scope,setScope]=useState('comparable');
   const [province,setProvince]=useState('全部');
   const [showSmall,setShowSmall]=useState(false);
-  const source=scope==='comparable'?data.sensitivity:data;
+  const source=scope==='comparable'?data.sensitivity:{...data,after:data.sensitivity.after,citiesAfter:data.sensitivity.citiesAfter};
   const before=new Map(source.before.map(r=>[r.province,r]));
   const cityBefore=new Map(source.citiesBefore.map(r=>[key(r),r]));
   const provinces=[...source.after].sort((a,b)=>b.newUsers-a.newUsers);
@@ -31,17 +32,17 @@ export default function DistributionWeeklyDiagnosis({geoOnly=false}) {
   const metric=(r,f,d)=><>{rate(r?.[f],r?.[d])}<small>{r?r[f]+' / '+r[d]:'缺少记录'}</small></>;
   return <section className="channelCompare">
     <div className="channelPanel">
-      <h2>{geoOnly?'本地包地区诊断 · 9/9–9/15':'本周诊断：先核实 9/12，再判断地区配置'}</h2>
-      <p><b>原始完整周：总启动 68.90% → 66.79%（-2.10pp）。</b>新增 UV 按日合计 3,440 → 3,397，启动 UV 2,370 → 2,269。</p>
-      <p><b>9/12 有 475 名新增，但所有地区的本地包页面曝光、算法曝光和四类点击均记录为 0；总启动为 255 / 475 = 53.68%。</b>两张相关源表一致出现零值，可能是页面未展示、埋点/导出异常或其他运行问题，现有汇总表无法区分。零值保留在原始趋势，不补造数据。</p>
-      <p>同时剔除本周 9/12 和上周同为周六的 9/5 后，六天总启动 <b>68.29% → 68.93%（+0.63pp）</b>；本地包到达率 <b>61.93% → 62.11%</b>，配置点击 / 页面曝光 <b>23.88% → 23.64%</b>。这只是敏感性对照，不能替代完整周 KPI，也不能证明异常日没有真实流失。</p>
-      <p>仍需关注页面内点击：本地包总点击 / 页面曝光 <b>38.76% → 36.47%</b>，广告位点击 / 页面曝光 <b>8.44% → 6.56%</b>，算法点击 / 算法曝光 <b>14.36% → 12.93%</b>。配置点击整体只降 0.24pp，不支持把全局下跌归为配置普遍失效。模块用户重叠，变化不能相加。</p>
+      <h2>{geoOnly?'本地包地区诊断 · 9/9–9/15':'本周诊断：9/12 已排除，原因待排查'}</h2>
+      <p><b>排除 9/12 后，本期有效 6 天：总启动 2,014 / 2,922 = 68.93%。</b>9/12 全部安卓新用户数据已从汇总、模块分析和趋势中排除，原因待排查。</p>
+      <p>原始记录保留供排查；看板不把异常日当作 0，也不插值补造。原因确认前，该日持续保持排除状态。</p>
+      <p>同时剔除本周 9/12 和上周同为周六的 9/5 后，六天总启动 <b>68.29% → 68.93%（+0.63pp）</b>；本地包到达率 <b>61.93% → 62.11%</b>，配置点击 / 页面曝光 <b>23.88% → 23.64%</b>。本周有效数据与上周对照均为 6 天；9/5 只为保证星期构成一致而从本次环比剔除，其他历史统计仍保留该正常日期。</p>
+      <p>仍需关注页面内点击：本地包总点击 / 页面曝光 <b>38.76% → 36.47%</b>，广告位点击 / 页面曝光 <b>8.44% → 6.56%</b>，算法点击 / 算法曝光 <b>14.36% → 12.93%</b>。配置点击整体只降 0.24pp，需分别定位各地区问题。模块用户重叠，变化不能相加。</p>
     </div>
     {!geoOnly&&<div className="channelPanel"><h3>逐日核对</h3><div className="channelTableWrap"><table>
       <thead><tr><th>日期</th><th>新增 / 启动 UV</th><th>总启动占比</th><th>页面曝光 / 新增</th><th>配置点击 / 页面曝光</th><th>广告位点击 / 页面曝光</th></tr></thead>
-      <tbody>{data.daily.map(r=><tr key={r.date}><th>{r.date.slice(5)}{r.date==='2026-09-12'?' · 异常待核实':''}</th><td>{r.newUsers} / {r.start}</td><td>{rate(r.start,r.newUsers)}</td><td>{metric(r,'pageExposure','newUsers')}</td><td>{metric(r,'configuredClicks','pageExposure')}</td><td>{metric(r,'adClicks','pageExposure')}</td></tr>)}</tbody>
+      <tbody>{data.daily.map(r=>ANDROID_NEW_USER_EXCLUSIONS[r.date]?<tr key={r.date}><th>{r.date.slice(5)}</th><td colSpan={5}>{ANDROID_NEW_USER_EXCLUSIONS[r.date]}</td></tr>:<tr key={r.date}><th>{r.date.slice(5)}</th><td>{r.newUsers} / {r.start}</td><td>{rate(r.start,r.newUsers)}</td><td>{metric(r,'pageExposure','newUsers')}</td><td>{metric(r,'configuredClicks','pageExposure')}</td><td>{metric(r,'adClicks','pageExposure')}</td></tr>)}</tbody>
     </table></div></div>}
-    <div className="channelPanel"><h3>地区优先级：以下均按同星期六天对照</h3>
+    <div className="channelPanel"><h3>地区优先级：两周均剔除周六，按 6 天对照</h3>
       <p><b>配置优先：浙江、江苏。</b>浙江 48/186 → 32/166，25.81% → 19.28%（-6.53pp）；江苏 34/129 → 19/108，26.36% → 17.59%（-8.76pp）。两省按本期曝光恢复至前期点击率的差额约 20 次，只用于排查排序，不等于新增启动或收入增量。</p>
       <p><b>到达优先：湖南，城市先看杭州、苏州。</b>湖南页面到达 77/133 → 59/135，57.89% → 43.70%，配置点击率基本稳定。杭州到达 71.91% → 60.00%，苏州到达 63.64% → 52.27%，应先核对新用户展示条件和进入页面路径。</p>
       <p><b>小样本复核：内蒙古、贵州；城市看绍兴、深圳。</b>内蒙古配置点击 21.52% → 15.48%（13/84），贵州 20.59% → 6.12%（3/49）；绍兴 9/19 → 4/18，深圳 8/16 → 1/18。信号值得核对实际游戏和顺序，但这些样本不足以直接全省或全市回退。</p>
@@ -50,8 +51,8 @@ export default function DistributionWeeklyDiagnosis({geoOnly=false}) {
     </div>
     {geoOnly&&<>
       <div className="channelPanel"><h3>各省与城市明细</h3>
-        <label>比较口径 <select aria-label="选择地区比较口径" value={scope} onChange={e=>setScope(e.target.value)}><option value="comparable">同星期六天：分别剔除 9/5、9/12</option><option value="reported">原始完整周：9/2–9/8 对比 9/9–9/15</option></select></label>
-        <p>{scope==='comparable'?'用于观察异常日之外的地区差异；六天结果不是修正后的完整周 KPI。':'保留 9/12 的已记录零值，因此页面到达率包含当天影响。'} 配置点击的分母是页面曝光。周合计为每日 UV 之和，不是跨日去重人数。</p>
+        <label>比较口径 <select aria-label="选择地区比较口径" value={scope} onChange={e=>setScope(e.target.value)}><option value="comparable">两周均为 6 天：分别剔除 9/5、9/12</option><option value="reported">上周 7 天对比本周 6 天（本周排除 9/12）</option></select></label>
+        <p>{scope==='comparable'?'两周均剔除周六，按相同星期构成对照。':'本周已排除 9/12；上周保留完整 7 天，星期构成不同，变化仅作参考。'} 配置点击的分母是页面曝光。周合计为每日 UV 之和，不是跨日去重人数。</p>
         <div className="channelTableWrap"><table aria-label="本周各省转化诊断"><thead><tr><th>省份</th><th>新增 UV 合计</th><th>到达率 前→后</th><th>配置点击 前</th><th>配置点击 后</th><th>配置变化</th><th>排查方向</th></tr></thead><tbody>{provinces.map(r=>{const b=before.get(r.province);return <tr key={r.province}><th>{r.province}</th><td>{r.newUsers}</td><td>{rate(b?.pageExposure,b?.newUsers)} → {rate(r.pageExposure,r.newUsers)}</td><td>{metric(b,'configuredClicks','pageExposure')}</td><td>{metric(r,'configuredClicks','pageExposure')}</td><td>{pp(delta(r,b,'configuredClicks','pageExposure'))}</td><td>{note(r,b)}</td></tr>;})}</tbody></table></div>
       </div>
       <div className="channelPanel"><h3>城市定位</h3>
@@ -62,6 +63,6 @@ export default function DistributionWeeklyDiagnosis({geoOnly=false}) {
       </div>
     </>}
     <div className="channelPanel"><h3>本周动作 · 9/16–9/22</h3><p>{NEXT_NEW_USER_PLAN}</p><p>优先顺序：核实 9/12 → 浙江/江苏配置与湖南到达 → 城市小样本复核。地区源表没有分城市的总启动、分游戏或坑位数据，所以地区结论止于本地包页面和点击，暂不能直接指定各市该替换哪一款游戏。</p></div>
-    <details className="channelPanel"><summary>数据来源与口径</summary><p>四份本期 Excel 均截至 2026/09/15。安卓新用户以源表 TOTAL_START / 新增用户 UV 为 KPI；活跃用户以变现 UV / 老用户池 UV 衡量进入营收游戏，不代表实际付费率。周、月占比均由每日分子分母加总后计算。</p><p>地区原始周有 1,382 新增的省份为未知；按已有城市归属补全后仍有 148（4.36%）无法归省，保留展示。渠道分组源表没有本次更新，仍截至 9/6，不用于解释本周渠道变化。</p></details>
+    <details className="channelPanel"><summary>数据来源与口径</summary><p>四份本期 Excel 均截至 2026/09/15。安卓新用户以源表 TOTAL_START / 新增用户 UV 为 KPI；活跃用户以变现 UV / 老用户池 UV 衡量进入营收游戏，不代表实际付费率。周、月占比均由每日分子分母加总后计算。</p><p>本期已排除 9/12，当前有效 6 天仍有 132 名新增（4.52%）无法归属省份，保留展示。渠道分组源表没有本次更新，仍截至 9/6，不用于解释本周渠道变化。</p></details>
   </section>;
 }

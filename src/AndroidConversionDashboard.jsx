@@ -1,3 +1,4 @@
+import { ANDROID_NEW_USER_EXCLUSIONS, markAndroidNewUserExclusions } from './androidNewUserExclusions';
 import React, { useMemo, useState } from 'react';
 import { NEW_USER_POPUP, NEW_USER_POPUP_UV } from './androidNewUserPopupData';
 import AndroidChannelComparison from './AndroidChannelComparison';
@@ -20,7 +21,7 @@ const LAST_LOCAL_PACKAGE_PERIOD = {
   id: '2026-09-02_2026-09-08', label: '9/2–9/8（10 省配置完整周）', data: LATEST_LOCAL_PACKAGE_GEO_DATA,
 };
 
-const CURRENT_LOCAL_PACKAGE_PERIOD = { id: '2026-09-09_2026-09-15', label: '9/9–9/15（含 9/12 异常日）', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA };
+const CURRENT_LOCAL_PACKAGE_PERIOD = { id: '2026-09-09_2026-09-15', label: '9/9–9/15（排除 9/12，共 6 天）', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA };
 
 const BASE_EVENTS = [
   { id: 'TOTAL_START', label: '总启动（用户启动＋本地包相关点击）', shortLabel: '总启动' },
@@ -51,16 +52,16 @@ const DAILY_ROWS = [["2026-06-20",579,364,79,8,2,2,8,0,66,22,115,77],["2026-06-2
 const PACKAGE_ROWS = [["2026-07-15",4,3,0,0],["2026-07-16",9,8,1,4],["2026-07-17",7,12,1,2],["2026-07-18",2,7,0,3],["2026-07-19",3,6,2,4],["2026-07-20",5,7,1,4],["2026-07-21",8,7,2,6],["2026-07-22",4,4,2,3],["2026-07-23",4,7,0,1],["2026-07-24",2,4,0,5],["2026-07-25",1,7,1,4],["2026-07-26",5,9,0,8],["2026-07-27",3,5,1,2],["2026-07-28",4,3,0,4],["2026-07-29",2,5,0,2],["2026-07-30",10,7,1,2],["2026-07-31",3,10,3,3],["2026-08-01",4,7,1,1],["2026-08-02",3,6,0,4],["2026-08-03",2,6,0,1],["2026-08-04",3,6,1,3],["2026-08-05",0,5,0,1],["2026-08-06",6,6,1,2],["2026-08-07",7,7,7,37],["2026-08-08",12,4,15,42],["2026-08-09",13,11,18,66],["2026-08-10",4,4,6,9],["2026-08-11",7,9,1,3],["2026-08-12",6,8,0,4],["2026-08-13",10,11,0,2],["2026-08-14",46,71,5,26],["2026-08-15",50,90,12,35],["2026-08-16",41,82,5,22],["2026-08-17",45,91,12,31],["2026-08-18",49,84,11,25],["2026-08-19",39,82,19,24],["2026-08-20",39,67,7,23],["2026-08-21",42,73,9,21],["2026-08-22",49,88,6,29],["2026-08-23",35,103,9,22],["2026-08-24",55,87,7,34],["2026-08-25",36,72,3,18],["2026-08-26",48,76,3,19],["2026-08-27",38,71,2,19],["2026-08-28",50,70,6,28],["2026-08-29",52,72,8,29],["2026-08-30",38,93,6,21],["2026-08-31",35,73,6,22],["2026-09-01",49,77,3,17],["2026-09-02",41,78,6,22],["2026-09-03",41,73,7,30],["2026-09-04",51,84,2,28],["2026-09-05",42,92,5,26],["2026-09-06",40,68,3,25],["2026-09-07",28,54,7,26],["2026-09-08",43,73,1,21],["2026-09-09",37,74,3,22],["2026-09-10",37,62,8,20],["2026-09-11",33,77,4,25],["2026-09-12",0,0,0,0],["2026-09-13",48,83,3,28],["2026-09-14",34,64,3,14],["2026-09-15",35,69,4,10]];
 const packageByDate = Object.fromEntries(PACKAGE_ROWS.map(([date, ...uvs]) => [date, Object.fromEntries(PACKAGE_EVENTS.map((event, index) => [event.id, uvs[index]]))]));
 
-const daily = DAILY_ROWS.map(([date, users, ...uvs]) => ({
+const daily = markAndroidNewUserExclusions(DAILY_ROWS.map(([date, users, ...uvs]) => ({
   date, label: `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`, users,
   uv: { [NEW_USER_POPUP.id]: NEW_USER_POPUP_UV[date] ?? null, ...Object.fromEntries(BASE_EVENTS.map((event, index) => [event.id, uvs[index]])), ...Object.fromEntries(PACKAGE_EVENTS.map(event => [event.id, packageByDate[date]?.[event.id] ?? null])) },
-}));
+})));
 const eventSeries = Object.fromEntries(EVENTS.map(event => [event.id, { ...event, values: daily.map(item => eventRate(item, event.id)) }]));
 const formatDate = value => value.replace('2026-', '').replace('-', '/').replace(/^0/, '');
 const formatPp = value => `${value >= 0 ? '+' : ''}${value.toFixed(2)}pp`;
 
 const EXPERIMENTS = [
-  { id: 'local-package-september15', observation: true, title: '完整周复盘 · 9/12 本地包零值异常', module: '总启动 / 本地包', metricId: '1018905', start: '2026-09-09', end: '2026-09-15', beforeStart: '2026-09-02', beforeEnd: '2026-09-08', content: '按原始完整周复盘，并单列 9/12 全地区曝光与点击为 0 的异常。同星期六天对照分别剔除 9/5 与 9/12。', analysis: '原始总启动 68.90%→66.79%（-2.10pp）；9/12 本地包页面曝光、算法曝光及四类点击均为 0。按同星期六天对照，总启动 68.29%→68.93%（+0.63pp），页面到达率基本持平，配置点击率 23.88%→23.64%（-0.24pp）。先核实异常，再重点排查浙江、江苏配置点击及湖南页面到达；此对照不能替代正式 KPI。' },
+  { id: 'local-package-september15', observation: true, title: '排除异常复盘 · 9/12 原因待排查', module: '总启动 / 本地包', metricId: '1018905', start: '2026-09-09', end: '2026-09-15', beforeStart: '2026-09-02', beforeEnd: '2026-09-08', beforeExcludeDates: ['2026-09-05'], content: '9/12 异常数据已从安卓新用户统计中排除，原因待排查。本期有效 6 天；上周同步剔除 9/5，按相同星期构成比较。', analysis: '排除 9/12 后，本期总启动 2,014 / 2,922 = 68.93%。上周对照同步剔除 9/5，为 1,986 / 2,908 = 68.29%，变化 +0.63pp；页面到达率基本持平，配置点击率 23.88%→23.64%（-0.24pp）。当前口径为有效 6 天，非完整 7 天；优先排查浙江、江苏配置点击和湖南页面到达，9/12 原因仍待排查。' },
   {
     id: 'local-hot-v1', title: '实验 1 · 本地热门优化', module: '本地热门',
     metricId: '60100102', content: '根据各市实际新增游戏排序，优化本地热门推荐排序。', start: '2026-07-08', end: '2026-07-14', beforeStart: '2026-07-01', beforeEnd: '2026-07-07',
@@ -114,11 +115,12 @@ const TARGET_GAME_MONTHS = [{"label":"1月","pc":{"users":2026379,"game":21.6562
 const ACTIVE_EXPERIMENT_DAILY = [["2026-07-29",185376,77373,316,77588],["2026-07-30",186273,77629,358,77899],["2026-07-31",184865,77547,363,77817],["2026-08-01",182889,77129,463,77476],["2026-08-02",183223,76994,370,77261],["2026-08-03",182942,76661,346,76920],["2026-08-04",183827,76614,458,76936],["2026-08-05",184423,77673,444,78001],["2026-08-06",184409,77604,595,78033],["2026-08-07",183060,77234,590,77674],["2026-08-08",182584,77749,345,77981],["2026-08-09",184082,78461,547,78865],["2026-08-10",184537,78793,383,79078],["2026-08-11",184620,78528,409,78830],["2026-08-12",185143,78714,527,79093],["2026-08-13",183763,78514,390,78799],["2026-08-14",183076,77330,319,77561],["2026-08-15",181932,76998,241,77180],["2026-08-16",181964,77206,217,77352],["2026-08-17",180787,75562,250,75754],["2026-08-18",182224,77282,221,77449],["2026-08-19",182335,77738,244,77911],["2026-08-20",183817,78613,226,78785],["2026-08-21",182583,77419,310,77658],["2026-08-22",181520,77668,294,77896],["2026-08-23",181690,77362,317,77609],["2026-08-24",183396,78609,269,78805],["2026-08-25",181003,76234,297,76446],["2026-08-26",180351,75231,290,75429],["2026-08-27",181058,76247,316,76468],["2026-08-28",180588,76025,455,76352],["2026-08-29",177671,74896,461,75228],["2026-08-30",179853,76371,543,76761],["2026-08-31",176121,72545,441,72880],["2026-09-01",180150,76445,434,76752],["2026-09-02",180211,76191,589,76622],["2026-09-03",180812,76891,495,77235],["2026-09-04",179927,76703,600,77158],["2026-09-05",177742,75922,393,76192],["2026-09-06",177446,75827,559,76239],["2026-09-07",177696,74787,297,75003],["2026-09-08",179122,76432,386,76722],["2026-09-09",179023,76667,527,77059],["2026-09-10",178330,76315,380,76602],["2026-09-11",177076,75979,956,76733],["2026-09-12",175925,75271,311,75512],["2026-09-13",177571,76388,1017,77157],["2026-09-14",178335,76810,268,76986],["2026-09-15",177240,76148,241,76310]].map(item => Array.isArray(item) ? (() => { const [date, users, chess, union, total] = item; return { date, label: `${Number(date.slice(5, 7))}/${Number(date.slice(8))}`, users, chess: chess / users * 100, union: union / users * 100, total: total / users * 100 }; })() : item);
 
 const formatRate = value => value == null ? '—' : `${value.toFixed(2)}%`;
-function eventRate(item, id) { return item.uv[id] == null || !item.users ? null : item.uv[id] / item.users * 100; }
-const missingEventLabel = (date, id) => id === NEW_USER_POPUP.id && date < NEW_USER_POPUP.start ? '未上线' : '缺少记录';
+function eventRate(item, id) { return item.excluded || item.uv[id] == null || !item.users ? null : item.uv[id] / item.users * 100; }
+const missingEventLabel = (date, id, reason) => reason || ANDROID_NEW_USER_EXCLUSIONS[date] || (id === NEW_USER_POPUP.id && date < NEW_USER_POPUP.start ? '未上线' : '缺少记录');
 
-function getSummary(start, end) {
-  const rows = daily.filter(item => item.date >= start && item.date <= end);
+function getSummary(start, end, comparisonExclusions = []) {
+  const trendRows = markAndroidNewUserExclusions(daily.filter(item => item.date >= start && item.date <= end), comparisonExclusions);
+  const rows = trendRows.filter(item => !item.excluded);
   const users = rows.reduce((sum, item) => sum + item.users, 0);
   const stats = Object.fromEntries(EVENTS.map(event => {
     const observed = rows.filter(item => item.uv[event.id] != null);
@@ -126,7 +128,7 @@ function getSummary(start, end) {
     const eventUsers = observed.reduce((sum, item) => sum + item.users, 0);
     return [event.id, { uv, users: eventUsers, days: observed.length, rate: eventUsers ? uv / eventUsers * 100 : null }];
   }));
-  return { rows, users, stats };
+  return { rows, trendRows, users, stats };
 }
 
 function TrendChart({ items, eventIds = [], markerDate, markerLabel }) {
@@ -148,8 +150,8 @@ function TrendChart({ items, eventIds = [], markerDate, markerLabel }) {
       {markerIndex >= 0 && <g><line className="optimiseMarker" x1={markerX} x2={markerX} y1="28" y2="198" /><text className="optimiseLabel" x={markerX + 7} y="39">{markerLabel}</text></g>}
       {visibleSeries.map((series, seriesIndex) => <path key={series.id} className="eventSeriesLine" style={{ stroke: colors[seriesIndex % colors.length], fill: 'none' }} d={series.values.map((value, index) => value == null ? '' : `${index === 0 || series.values[index - 1] == null ? 'M' : 'L'}${x(index)},${y(value)}`).join(' ')} />)}
       {hoveredIndex !== null && visibleSeries.map((series, seriesIndex) => series.values[hoveredIndex] != null && <circle key={`${series.id}-${hoveredIndex}`} className="trendPoint" cx={x(hoveredIndex)} cy={y(series.values[hoveredIndex])} r="4" style={{ fill: colors[seriesIndex % colors.length] }} />)}
-      {hoveredIndex !== null && visibleSeries.length > 0 && <g className="trendTooltip" transform={`translate(${tooltipX}, 28)`}><rect width="220" height={31 + visibleSeries.length * 18} rx="6" /><text x="10" y="19" className="tooltipDate">{items[hoveredIndex].date}</text>{visibleSeries.map((series, index) => <g key={series.id} transform={`translate(10, ${37 + index * 18})`}><circle cx="4" cy="-4" r="3" style={{ fill: colors[index % colors.length] }} /><text x="13" y="0">{series.shortLabel}　{series.values[hoveredIndex] == null ? missingEventLabel(items[hoveredIndex].date, series.id) : `${series.values[hoveredIndex].toFixed(1)}%`}</text></g>)}</g>}
-      {visibleSeries.length > 0 && !values.length && <text className="emptyChartText" x="407" y="125" textAnchor="middle">所选区间无事件记录</text>}
+      {hoveredIndex !== null && visibleSeries.length > 0 && <g className="trendTooltip" transform={`translate(${tooltipX}, 28)`}><rect width="220" height={31 + visibleSeries.length * 18} rx="6" /><text x="10" y="19" className="tooltipDate">{items[hoveredIndex].date}</text>{visibleSeries.map((series, index) => <g key={series.id} transform={`translate(10, ${37 + index * 18})`}><circle cx="4" cy="-4" r="3" style={{ fill: colors[index % colors.length] }} /><text x="13" y="0">{series.shortLabel}　{series.values[hoveredIndex] == null ? missingEventLabel(items[hoveredIndex].date, series.id, items[hoveredIndex].exclusionReason) : `${series.values[hoveredIndex].toFixed(1)}%`}</text></g>)}</g>}
+      {visibleSeries.length > 0 && !values.length && <text className="emptyChartText" x="407" y="125" textAnchor="middle">{items.every(item => item.excluded) ? '所选区间数据已排除，原因待排查' : '所选区间无事件记录'}</text>}
       {!visibleSeries.length && <text className="emptyChartText" x="407" y="125" textAnchor="middle">请选择至少一个事件查看趋势</text>}
       {visibleSeries.length > 0 && items.map((item, index) => <rect className="trendHoverTarget" key={item.date} x={x(index) - 730 / Math.max(items.length - 1, 1) / 2} y="26" width={730 / Math.max(items.length - 1, 1)} height="174" onMouseEnter={() => setHoveredIndex(index)} onClick={() => setHoveredIndex(index)} />)}
       {items.map((item, index) => (items.length <= 14 || index === 0 || index === items.length - 1 || index % 2 === 0) && <text className="axisLabel" x={x(index)} y="222" textAnchor="middle" key={item.date}>{item.label}</text>)}
@@ -190,10 +192,11 @@ function GlobalDataPage({ embedded = false }) {
   return <>
     {!embedded && <header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>总启动与模块点击总览</p></div><span>数据更新至 2026/09/15</span></header>}
     <Card className="filterCard"><div className="filterCopy"><CalendarDays /><div><b>数据日期</b><span>模块数据有效起始 6/20；7/15 起本地包单列；8/10 新增新用户首屏弹窗</span></div></div><DateRangeInput label="数据日期" isLabelHidden value={range} onChange={value => value && setRange(value)} min="2026-06-20" max="2026-09-15" numberOfMonths={1} /><Button label="应用筛选" variant="primary" onClick={() => setAppliedRange(range)} /></Card>
-    <div className="globalMetrics"><Metric label="期间总启动占比" value={`${summary.stats.TOTAL_START.rate.toFixed(2)}%`} helper={`${summary.stats.TOTAL_START.uv.toLocaleString()} / ${summary.users.toLocaleString()} · ${period}`} icon={BarChart3} /><Metric label="趋势已选事件" value={eventIds.length ? `${eventIds.length} 项` : '未选择'} helper={selectedEvent ? selectedEvent.label : '支持多选或全部取消'} tone="positive" icon={TrendingUp} /><Metric label="纯新增用户数" value={summary.users.toLocaleString()} helper={`${selected.length} 天 · 模块数据起始 6/20`} icon={FileSearch} /></div>
+    {selected.some(item => item.excluded) && <div className="reviewCallout"><b>9/12 异常数据已排除，原因待排查</b><p>该日全部安卓新用户数据不计入分子、分母和模块汇总；趋势留空，不按 0 展示。</p></div>}
+    <div className="globalMetrics"><Metric label="期间总启动占比" value={formatRate(summary.stats.TOTAL_START.rate)} helper={summary.rows.length ? `${summary.stats.TOTAL_START.uv.toLocaleString()} / ${summary.users.toLocaleString()} · ${period}` : '无可用数据 · 异常日已排除'} icon={BarChart3} /><Metric label="趋势已选事件" value={eventIds.length ? `${eventIds.length} 项` : '未选择'} helper={selectedEvent ? selectedEvent.label : '支持多选或全部取消'} tone="positive" icon={TrendingUp} /><Metric label="纯新增用户数" value={summary.rows.length ? summary.users.toLocaleString() : '—'} helper={`有效 ${summary.rows.length} 天${selected.length > summary.rows.length ? ` · 排除 ${selected.length - summary.rows.length} 天` : ''}`} icon={FileSearch} /></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>事件趋势</h2><p>{period} · 多事件共用占比纵轴</p></div><details className="eventPicker"><summary>筛选事件 <b>{eventIds.length ? `已选 ${eventIds.length} 项` : '未选择'}</b></summary><div>{EVENTS.map(event => <label key={event.id}><input type="checkbox" checked={eventIds.includes(event.id)} onChange={() => toggleEvent(event.id)} />{event.label}</label>)}</div></details></div><Card className="chartCard"><TrendChart items={selected} eventIds={eventIds} /></Card></section>
-    <div className="reviewCallout"><b>新增事件：新用户首屏弹窗</b><p>8/10 新增；源表 8/10 缺少记录，8/11–9/15 共 36 天有记录。趋势中未上线和缺少记录均留空，有记录的 0 正常展示；概览占比仅用有记录日期的点击 UV 合计 / 同期新增用户 UV 合计。该占比不是弹窗曝光后的点击率，各事件用户可重叠，不能相加作为总启动。</p></div>
-    <div className="reviewCallout"><b>最新完整周：9/9–9/15 · 9/12 异常待核实</b><p>原始总启动 68.90% → 66.79%（-2.10pp）。9/12 有 475 新增，本地包页面曝光及四类点击全部为 0；两周同时剔除周六后为 68.29% → 68.93%（+0.63pp）。先核实异常，重点排查浙江、江苏配置与湖南页面到达。完整分析见“实验复盘”和“本地包分城市数据”。</p><p>{NEXT_NEW_USER_PLAN}</p></div>
+    <div className="reviewCallout"><b>新增事件：新用户首屏弹窗</b><p>8/10 新增；源表 8/10 缺少记录，8/11–9/15 源表有 36 天记录；排除 9/12 后纳入统计 35 天。趋势中的异常日、未上线和缺少记录均留空；概览占比使用有效记录日的点击 UV 合计 / 同期新增用户 UV 合计。该占比不是弹窗曝光后的点击率，各事件用户可重叠，不能相加作为总启动。</p></div>
+    <div className="reviewCallout"><b>最新有效数据：9/9–9/15 · 已排除 9/12</b><p>9/12 异常数据已排除，原因待排查。本期有效 6 天，总启动 2,014 / 2,922 = 68.93%；上周对照同步剔除 9/5 后为 68.29%，变化 +0.63pp。重点排查浙江、江苏配置与湖南页面到达。完整分析见“实验复盘”和“本地包分城市数据”。</p><p>{NEXT_NEW_USER_PLAN}</p></div>
     <section className="pageSection"><div className="sectionTitle"><div><h2>模块事件概览</h2><p>点击 UV / 同期新增用户 UV · 本地包自 7/15 起；新用户弹窗自 8/11 起有记录</p></div></div><Card className="globalEventCard"><GlobalEventTable /></Card></section>
   </>;
 }
@@ -319,7 +322,7 @@ function LocalPackageGeoReview() {
   const [provinceScope, setProvinceScope] = useState('全部');
   const selectedPeriod = geoPeriods.find(item => item.id === periodId) || { id: '2026-08-17_2026-08-24', label: '8/17–8/24', data: LOCAL_PACKAGE_GEO_DATA };
   if (selectedPeriod.id === CURRENT_LOCAL_PACKAGE_PERIOD.id) return <section className="pageSection">
-    <Card className="experimentSelector"><div><b>地区观察周期</b><span>最新周支持原始完整周与同星期六天对照</span></div><select aria-label="选择本地包地区观察周期" value={periodId} onChange={event => setPeriodId(event.target.value)}>{geoPeriods.map(item => <option value={item.id} key={item.id}>{item.label}</option>)}</select></Card>
+    <Card className="experimentSelector"><div><b>地区观察周期</b><span>9/12 已排除；默认按两周均剔除周六的 6 天对照</span></div><select aria-label="选择本地包地区观察周期" value={periodId} onChange={event => setPeriodId(event.target.value)}>{geoPeriods.map(item => <option value={item.id} key={item.id}>{item.label}</option>)}</select></Card>
     <DistributionWeeklyDiagnosis geoOnly />
   </section>;
   const { meta, total, provinces, cities } = selectedPeriod.data;
@@ -379,7 +382,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
     <LocalPackageConfigExperiment />
     <LocalPackageExperimentProtocol />
   </>;
-  const before = getSummary(experiment.beforeStart, experiment.beforeEnd);
+  const before = getSummary(experiment.beforeStart, experiment.beforeEnd, experiment.beforeExcludeDates);
   const after = getSummary(experiment.start, experiment.end);
   const experimentMetric = eventSeries[experiment.metricId];
   const totalDelta = after.stats.TOTAL_START.rate - before.stats.TOTAL_START.rate;
@@ -402,7 +405,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   const bannerOffRows = after.rows.filter(item => item.uv['60100602'] === 0);
   const totalStartRate = rows => rows.reduce((sum, item) => sum + item.uv.TOTAL_START, 0) / rows.reduce((sum, item) => sum + item.users, 0) * 100;
   const bannerDayGap = bannerOnRows.length && bannerOffRows.length ? totalStartRate(bannerOnRows) - totalStartRate(bannerOffRows) : null;
-  const trendItems = [...before.rows, ...after.rows];
+  const trendItems = [...before.trendRows, ...after.trendRows];
   const nextSteps = ['local-package-september15', 'local-package-ten-provinces'].includes(experimentId) ? [{ title: '本周确定动作与待定建议', detail: NEXT_NEW_USER_PLAN }] : experimentId === 'total-start-dip-sep4'
     ? [{ title: '优先核查游戏模块开始玩的曝光、排序与承接启动链路。', detail: '9/4 该模块从前 7 日的 20.76% 降至 17.55%（-3.21pp），是当日最强的同步负向模块；核对当天是否有坑位、游戏供给、跳转或启动失败异常。' }, { title: '同步核查搜索游戏链路与流量结构。', detail: '搜索游戏点击较前 7 日 -2.38pp；需补充点击用户到启动用户的承接明细和渠道/版本拆分，才能确认对总启动的真实贡献。' }, { title: '本地包继续按配置推荐点击观察。', detail: '9/4 本地包地区配置 +2.01pp、地区推荐 +1.77pp，当前不支持“本地包走弱导致下跌”的判断。' }]
     : experimentId === 'local-package-config-cities'
