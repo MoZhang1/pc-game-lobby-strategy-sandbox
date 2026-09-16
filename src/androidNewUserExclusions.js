@@ -1,7 +1,5 @@
-// Operational exclusion confirmed by the user. Raw source rows remain intact.
-export const ANDROID_NEW_USER_EXCLUSIONS = {
-  '2026-09-12': '异常数据已排除，原因待排查',
-};
+// September 12 was corrected in both source workbooks and restored to reporting.
+export const ANDROID_NEW_USER_EXCLUSIONS = {};
 
 export function markAndroidNewUserExclusions(rows, comparisonExclusions = []) {
   return rows.map(row => {
