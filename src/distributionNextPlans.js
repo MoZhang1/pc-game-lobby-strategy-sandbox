@@ -1,5 +1,10 @@
 // Completed actions and this week's confirmed to-dos are maintained separately.
 export const LAST_NEW_USER_AD_ACTION = '上周（9/9–9/15）已完成本地包广告位推荐调整，游戏改为美女捕鱼、罗松、掼蛋、比鸡。';
-export const NEXT_NEW_USER_PLAN = '9/16–9/22 待办：1. 本地包浙江、江苏、广东优化；2. 广告位推荐优化，继续更换游戏（新游戏组合待定）。';
-export const NEXT_ANDROID_ACTIVE_PLAN = '9/16–9/22：无新增事项。';
-export const NEXT_PC_ACTIVE_PLAN = '9/16–9/22 待办：本地热门高活跃地区变现游戏权重提升。';
+export const PREVIOUS_NEW_USER_PLAN = '9/16–9/22 待办：1. 本地包浙江、江苏、广东优化；2. 广告位推荐优化，继续更换游戏（新游戏组合待定）。';
+export const PREVIOUS_ANDROID_ACTIVE_PLAN = '9/16–9/22：无新增事项。';
+export const PREVIOUS_PC_ACTIVE_PLAN = '9/16–9/22 待办：本地热门高活跃地区变现游戏权重提升。';
+
+export const LAST_NEW_USER_ACTION = '9/16（周三）浙江、江苏、广东本地包优化及广告位推荐换游戏均已生效（用户确认）；本次广告位新游戏名单未提供。';
+export const NEXT_NEW_USER_PLAN = '9/23–9/29 待办待定。分析建议（待确认）：保留浙江、江苏、广东当前配置；优先核对广告位换游戏后的展示、点击和跳转，确认原因后再做单项替换或小流量回退对照；广东先查广州、佛山页面到达，内蒙古、辽宁、安徽先按城市复核下降及样本。';
+export const NEXT_ANDROID_ACTIVE_PLAN = '9/23–9/29 待办待定。分析建议（待确认）：保持当前配置，继续观察营收棋牌进入占比；当前没有新增实验，不把自然波动当成新增策略效果。';
+export const NEXT_PC_ACTIVE_PLAN = '9/23–9/29 待办待定。分析建议（待确认）：暂不继续扩大提权，先核对高活跃地区各游戏的曝光、点击和进入营收棋牌承接，并复盘联运创角增长来源；整体上涨不能单独证明本地热门提权有效。';
