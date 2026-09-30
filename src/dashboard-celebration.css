@@ -1,0 +1,65 @@
+.dashboardCelebration {
+  margin: -10px 12px 20px;
+}
+
+.reportNav .dashboardCelebrationButton {
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1px solid #f0d9bb;
+  border-radius: 9px;
+  background: #fff8ed;
+  color: #945119;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.reportNav .dashboardCelebrationButton:hover:not(:disabled) {
+  background: #fff0d7;
+  color: #783d0d;
+}
+
+.reportNav .dashboardCelebrationButton:focus-visible {
+  outline: 2px solid #b8722a;
+  outline-offset: 3px;
+}
+
+.reportNav .dashboardCelebrationButton:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+.dashboardConfettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.dashboardCelebrationMessage {
+  display: block;
+  padding-top: 8px;
+  color: #945119;
+  text-align: center;
+  font-size: 13px;
+}
+
+.dashboardCelebrationSrOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 720px) {
+  .dashboardCelebration {
+    width: 150px;
+    margin: 0 5px 16px;
+  }
+}
