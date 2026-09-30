@@ -60,7 +60,7 @@ export default function AndroidChannelComparison() {
     </div>
     <div className="channelPanel"><h3>模块点击对比</h3><p>单元格为占比及点击 UV。各模块可能重复点击，不相加替代总启动。</p>
     <div className="channelTableWrap"><table><thead><tr><th>事件</th>{channels.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{events.map(e=><tr key={e}><th>{data.events[e]}</th>{channels.map(c=>{const a=aggregate(rows,c,e);return <td key={c}>{pct(a.clicks,a.users)}<small>{num(a.clicks)} / {num(a.users)}</small></td>;})}</tr>)}</tbody></table></div></div>
-    <p>来源：分渠道安卓新增点击.xlsx。仅包含表内三渠道，不代表平台全部新增用户。无记录日期保留缺失，不补为零；总启动使用源表 TOTAL_START。</p>
+    <p>来源：分渠道安卓新增点击.xlsx。仅包含表内三渠道，不代表平台全部新增用户。占比按每日 UV 合计重算，非跨日去重；无记录日期保留缺失，不补为零；总启动使用源表 TOTAL_START。</p>
     </>}
   </section>;
 }

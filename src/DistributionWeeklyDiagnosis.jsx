@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LAST_NEW_USER_AD_ACTION, NEXT_NEW_USER_PLAN, PREVIOUS_NEW_USER_PLAN } from './distributionNextPlans';
 import currentData from './distributionWeeklyData';
+import channelData from './androidChannelData';
 import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA, CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
 import { ANDROID_NEW_USER_EXCLUSIONS } from './androidNewUserExclusions';
 import './android-channel.css';
@@ -123,6 +124,6 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
     </div>
     {!geoOnly && <details className="channelPanel"><summary>逐日数据核对</summary><div className="channelTableWrap"><table aria-label="本地包逐日核对"><thead><tr><th>日期</th><th>新增 / 启动 UV</th><th>总启动占比</th><th>页面到达率</th><th>配置点击率</th><th>广告位推荐点击率</th></tr></thead><tbody>{data.daily.map(r => ANDROID_NEW_USER_EXCLUSIONS[r.date] ? <tr key={r.date}><th>{r.date.slice(5)}</th><td colSpan={5}>{ANDROID_NEW_USER_EXCLUSIONS[r.date]}</td></tr> : <tr key={r.date}><th>{r.date.slice(5)}</th><td>{r.newUsers} / {r.start}</td><td>{rate(r.start, r.newUsers)}</td><td><MetricCell row={r} numerator="pageExposure" denominator="newUsers" /></td><td><MetricCell row={r} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={r} numerator="adClicks" denominator="pageExposure" /></td></tr>)}</tbody></table></div></details>}
     <div className="channelPanel"><h3>{review.planTitle || '当时计划 · 9/16–9/22'}</h3><p>{isLatest ? NEXT_NEW_USER_PLAN : review.planText || PREVIOUS_NEW_USER_PLAN}</p><p>地区源表没有分城市的总启动、分游戏或坑位数据；先依据页面到达与配置点击定位省市，再核对具体游戏和位置。</p></div>
-    <details className="channelPanel"><summary>数据来源与口径</summary><p>来自《本地包分城市.xlsx》和《最安卓新用户点击转化.xlsx》，本次观察截至 {data.period.end.replaceAll('-', '/')}。9/12 已补齐并纳入汇总与趋势；本期完整 7 天仍有 {data.geo.after.meta.unmappedNewUsers} 名新增（{rate(data.geo.after.meta.unmappedNewUsers, newAfter.users)}）无法归属省份，保留展示。所有占比按分子、分母合计重算。</p><p>渠道分组源表没有本次更新，仍截至 9/6，不用于解释本周渠道变化。</p></details>
+    <details className="channelPanel"><summary>数据来源与口径</summary><p>来自《本地包分城市.xlsx》和《最安卓新用户点击转化.xlsx》，本次观察截至 {data.period.end.replaceAll('-', '/')}。9/12 已补齐并纳入汇总与趋势；本期完整 7 天仍有 {data.geo.after.meta.unmappedNewUsers} 名新增（{rate(data.geo.after.meta.unmappedNewUsers, newAfter.users)}）无法归属省份，保留展示。所有占比按分子、分母合计重算。</p><p>渠道对比数据截至 {channelData.meta.end.replaceAll('-', '/')}，覆盖百度品专、360移动、百度_m；渠道点击率以各渠道新增 UV 为分母，三渠道不代表平台全部新增。</p></details>
   </section>;
 }

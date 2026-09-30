@@ -11,6 +11,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--end', help='Inclusive reporting cutoff (YYYY-MM-DD).')
 parser.add_argument('--output', type=Path, help='Save the snapshot instead of printing its rows.')
 parser.add_argument('--dip', action='store_true', help='Legacy September 7 comparison.')
+parser.add_argument('--channel', action='store_true', help='Read the Android channel-click workbook only.')
 args = parser.parse_args()
 coverage = {}
 def read(name):
@@ -23,6 +24,45 @@ def read(name):
 def date(d):
     if isinstance(d, datetime): return d.strftime('%Y-%m-%d')
     s=str(d).replace('-', ''); return s[:4]+'-'+s[4:6]+'-'+s[6:8]
+
+if args.channel:
+    name = '分渠道/分渠道安卓新增点击.xlsx'
+    source_rows = read(name)
+    assert not args.end or args.end <= coverage[name]['end'], 'Channel source does not reach the reporting cutoff'
+    groups, events = {}, {}
+    for d, channel, event, label, users, clicks, *_ in source_rows:
+        d, event = date(d), str(event)
+        if args.end and d > args.end:
+            continue
+        assert channel in ('百度品专', '360移动', '百度_m'), f'Unexpected channel: {channel}'
+        assert isinstance(users, (int, float)) and isinstance(clicks, (int, float)) and 0 <= clicks <= users
+        assert users == int(users) and clicks == int(clicks), 'Channel UV must be an integer'
+        assert event not in events or events[event] == label, f'Conflicting label: {event}'
+        events[event] = label
+        row = groups.setdefault((d, channel), dict(date=d, channel=channel, users=int(users), clicks={}))
+        assert row['users'] == users, f'Inconsistent denominator: {d} {channel}'
+        assert event not in row['clicks'], f'Duplicate channel/event key: {d} {channel} {event}'
+        row['clicks'][event] = int(clicks)
+    assert groups, 'No channel data in the selected period'
+    assert all('TOTAL_START' in row['clicks'] for row in groups.values()), 'Missing channel TOTAL_START'
+    dates = sorted({d for d, _ in groups})
+    calendar = [(datetime.fromisoformat(dates[0]) + timedelta(days=i)).strftime('%Y-%m-%d')
+                for i in range((datetime.fromisoformat(dates[-1]) - datetime.fromisoformat(dates[0])).days + 1)]
+    channels = list(dict.fromkeys(c for _, c in groups))
+    out = dict(meta=dict(source=name, sheet=coverage[name]['sheet'], start=dates[0], end=dates[-1],
+                        days=len(dates), channels=channels,
+                        missingDates={c: [d for d in calendar if (d, c) not in groups] for c in channels}),
+               events=events, rows=sorted(groups.values(), key=lambda r: (r['date'], channels.index(r['channel']))))
+    payload = json.dumps(out, ensure_ascii=False, separators=(',', ':'))
+    if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
+        args.output.write_text(payload)
+        print(json.dumps(dict(saved=str(args.output), meta=out['meta'], sourceRows=len(source_rows),
+                              channelDays=len(groups), events=len(events)), ensure_ascii=False))
+    else:
+        print(payload)
+    raise SystemExit(0)
+
 new={}
 for d,e,n,u,k,*_ in read('最安卓新用户点击转化.xlsx'):
     key=date(d);e=str(e)
