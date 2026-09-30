@@ -13,54 +13,61 @@
 .reportNav .dashboardParadeFlag svg { width: 24px; height: 16px; flex-shrink: 0; }
 .reportNav .dashboardParadeFlag:hover { background: #ffebe4; }
 .reportNav .dashboardParadeFlag:focus-visible { outline: 2px solid #a34035; outline-offset: 2px; }
+.paradeAnnouncement { position: fixed; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-.paradeDialog {
-  width: min(1100px, calc(100vw - 40px), calc((100dvh - 200px) * 1.7768));
-  max-width: none;
-  max-height: calc(100dvh - 32px);
-  margin: auto;
-  padding: 0;
-  border: 1px solid #e7d8c3;
-  border-radius: 18px;
-  background: #fffcf6;
-  color: #443129;
-  box-shadow: 0 28px 110px #1c1b2d40;
-  overflow: auto;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+.paradeOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: hidden;
+  pointer-events: none;
+  animation: monkeyParadeCelebrate 18s linear both;
 }
-
-.paradeDialog::backdrop { background: #17212dd4; backdrop-filter: blur(5px); }
-.paradeHeader { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 18px 24px; }
-.paradeHeader h2 { margin: 0; font-size: 23px; font-weight: 750; letter-spacing: 0.02em; }
-.paradeHeader p { margin: 5px 0 0; font-size: 12px; color: #927868; }
-.paradeDialog button { font: 600 13px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif; cursor: pointer; }
-.paradeDialog button:focus-visible { outline: 2px solid #a34035; outline-offset: 3px; }
-.paradeClose { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; padding: 0; border: 1px solid #e9dbce; border-radius: 50%; background: transparent; color: #735c4d; }
-.paradeClose:hover { background: #f4e9da; }
-
-.paradeStage { position: relative; width: 100%; aspect-ratio: 1672 / 941; overflow: hidden; background: #f0dfc5; isolation: isolate; }
-.paradeBackdrop { display: block; width: 100%; height: 100%; object-fit: cover; }
-.paradeFormation { position: absolute; inset: 0; pointer-events: none; animation: monkeyParadePass 18s linear both; will-change: transform; }
+.paradeScene {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: min(1180px, 100vw, calc(100dvh * 1.6));
+  aspect-ratio: 1672 / 941;
+  transform: translateX(-50%);
+  isolation: isolate;
+}
+.paradeBackdrop {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent), linear-gradient(to bottom, transparent 6%, #000 31%, #000 73%, transparent 100%);
+  mask-image: linear-gradient(to right, transparent, #000 16%, #000 84%, transparent), linear-gradient(to bottom, transparent 6%, #000 31%, #000 73%, transparent 100%);
+  -webkit-mask-composite: source-in;
+  mask-composite: intersect;
+}
+.paradeGreeting {
+  position: absolute;
+  top: 11%;
+  left: 0;
+  width: 100%;
+  color: #ad392b;
+  text-align: center;
+  font: 900 clamp(28px, 4vw, 56px)/1.2 "STKaiti", "KaiTi", "Songti SC", serif;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
+  text-shadow: 0 2px 0 #fff0c4, 0 0 24px #fff8e8;
+}
+.paradeFormation { position: absolute; inset: 0; animation: monkeyParadePass 18s linear both; will-change: transform; }
 .paradeMonkey { position: absolute; aspect-ratio: 1; }
 .paradeSprite { position: absolute; inset: 0; background-size: 400% 200%; background-repeat: no-repeat; animation: monkeyParadeMarch 0.9s steps(1, end) infinite; }
 .paradeMonkeyShadow { position: absolute; left: 33%; right: 15%; bottom: 4%; height: 5%; border-radius: 50%; background: #5e422e24; filter: blur(2px); }
-.paradeStage.is-paused :is(.paradeFormation, .paradeSprite) { animation-play-state: paused; }
-.paradeStage.is-static .paradeFormation { animation: none; transform: translateX(0); }
-.paradeStage.is-static .paradeSprite { animation: none; background-position: 0 0; }
+.paradeOverlay.is-static { animation: none; }
+.paradeOverlay.is-static .paradeFormation { animation: none; transform: translateX(0); }
+.paradeOverlay.is-static .paradeSprite { animation: none; background-position: 0 0; }
+.paradeLoadError { position: fixed; bottom: 28px; left: 0; z-index: 1000; width: 100%; margin: 0; pointer-events: none; color: #863c2d; text-align: center; font-size: 14px; text-shadow: 0 1px 5px #fff, 0 1px 12px #fff; }
 
-.paradeAssetMessage { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #8c6347; }
-.paradeAssetMessage p { margin: 0; font-size: 15px; }
-.paradeAssetMessage button { padding: 9px 20px; border: 1px solid #b88769; border-radius: 8px; background: #fffcf6; color: #8c4e3d; }
-.paradeFooter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; padding: 17px 24px; }
-.paradeCaption { display: grid; gap: 5px; }
-.paradeCaption strong { font-size: 14px; font-weight: 650; }
-.paradeCaption span { font-size: 12px; color: #927868; }
-.paradeControls { display: flex; gap: 8px; }
-.paradeControls button { display: flex; align-items: center; justify-content: center; gap: 7px; padding: 9px 14px; border: 1px solid #e2cebb; border-radius: 8px; background: transparent; color: #795444; }
-.paradeControls button:last-child { background: #a3483a; border-color: #a3483a; color: #fffaf5; }
-.paradeControls button:hover:not(:disabled) { filter: brightness(0.95); }
-.paradeControls button:disabled { opacity: 0.45; cursor: default; }
-
+@keyframes monkeyParadeCelebrate {
+  0%, 100% { opacity: 0; }
+  7%, 89% { opacity: 1; }
+}
 @keyframes monkeyParadePass { from { transform: translateX(-82%); } to { transform: translateX(112%); } }
 @keyframes monkeyParadeMarch {
   0%, 100% { background-position: 0 0; }
@@ -75,9 +82,5 @@
 
 @media (max-width: 720px) {
   .reportNav .dashboardParadeFlag { width: 40px; height: 40px; flex-basis: 40px; margin-block: -9px; }
-  .paradeDialog { width: min(calc(100vw - 16px), calc((100dvh - 190px) * 1.7768)); border-radius: 14px; }
-  .paradeHeader { padding: 14px 16px; }
-  .paradeHeader h2 { font-size: 20px; }
-  .paradeFooter { gap: 12px; padding: 14px 16px; }
-  .paradeControls { margin-left: auto; }
+  .paradeScene { width: min(140vw, 700px, calc(100dvh * 1.6)); }
 }

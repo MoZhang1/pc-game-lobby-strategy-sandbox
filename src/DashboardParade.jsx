@@ -1,6 +1,5 @@
-import React, { useEffect, useId, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Flag, Pause, Play, RotateCcw, X } from 'lucide-react';
 import './dashboard-parade.css';
 
 const BACKDROP = `${import.meta.env.BASE_URL}dashboard-parade/tiananmen.png`;
@@ -11,34 +10,12 @@ const RANKS = [
   { size: 18, bottom: 1.5, offset: 6 },
 ];
 
-function ParadeDialog({ onClose }) {
-  const dialogRef = useRef(null);
-  const titleId = useId();
+function ParadeOverlay({ onFinish }) {
   const [assets, setAssets] = useState('loading');
-  const [attempt, setAttempt] = useState(0);
-  const [run, setRun] = useState(0);
-  const [paused, setPaused] = useState(false);
-  const [complete, setComplete] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [motionRequested, setMotionRequested] = useState(false);
-  const motionAllowed = !reducedMotion || motionRequested;
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    const previousFocus = document.activeElement;
-    const previousOverflow = document.body.style.overflow;
-    dialog.showModal();
-    document.body.style.overflow = 'hidden';
-    return () => {
-      dialog.close();
-      document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus();
-    };
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
-    setAssets('loading');
     Promise.all([BACKDROP, MARCH_SPRITE].map(src => {
       const image = new Image();
       image.src = src;
@@ -49,79 +26,56 @@ function ParadeDialog({ onClose }) {
       if (!cancelled) setAssets('error');
     });
     return () => { cancelled = true; };
-  }, [attempt]);
+  }, []);
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => {
-      setReducedMotion(preference.matches);
-      setMotionRequested(false);
-    };
-    const pauseWhenHidden = () => {
-      if (document.hidden) setPaused(true);
-    };
+    const update = () => setReducedMotion(preference.matches);
+    const dismissOnEscape = event => { if (event.key === 'Escape') onFinish(); };
+    const dismissWhenHidden = () => { if (document.hidden) onFinish(); };
     preference.addEventListener('change', update);
-    document.addEventListener('visibilitychange', pauseWhenHidden);
+    document.addEventListener('keydown', dismissOnEscape);
+    document.addEventListener('visibilitychange', dismissWhenHidden);
     return () => {
       preference.removeEventListener('change', update);
-      document.removeEventListener('visibilitychange', pauseWhenHidden);
+      document.removeEventListener('keydown', dismissOnEscape);
+      document.removeEventListener('visibilitychange', dismissWhenHidden);
     };
-  }, []);
+  }, [onFinish]);
 
-  function replay() {
-    setMotionRequested(true);
-    setPaused(false);
-    setComplete(false);
-    setRun(value => value + 1);
-  }
+  useEffect(() => {
+    if (assets === 'loading') return;
+    const timer = window.setTimeout(onFinish, assets === 'error' ? 4000 : reducedMotion ? 6000 : 18000);
+    return () => window.clearTimeout(timer);
+  }, [assets, reducedMotion, onFinish]);
 
-  const status = assets === 'loading' ? '方阵正在集合…'
-    : assets === 'error' ? '场景未能加载'
-    : !motionAllowed ? '猴乐乐方阵，向您敬礼！'
-    : complete ? '检阅完毕，国庆快乐！'
-    : paused ? '方阵已暂停'
-    : '猴乐乐方阵，齐步走！';
-
-  return <dialog ref={dialogRef} className="paradeDialog" aria-labelledby={titleId}
-    onCancel={event => { event.preventDefault(); onClose(); }}
-    onClick={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <header className="paradeHeader">
-      <div><h2 id={titleId}>国庆快乐！</h2><p>猴乐乐方阵 · 天安门广场</p></div>
-      <button type="button" className="paradeClose" aria-label="关闭阅兵" onClick={onClose} autoFocus><X aria-hidden="true" size={20} /></button>
-    </header>
-    <div className={`paradeStage ${paused ? 'is-paused' : ''} ${!motionAllowed ? 'is-static' : ''}`}>
-      {assets === 'ready' ? <>
-        <img className="paradeBackdrop" src={BACKDROP} width="1672" height="941" alt="晴空下的天安门城楼，红墙金瓦，前方是宽阔的石砖广场" />
-        <div key={run} className="paradeFormation" role="img" aria-label="18 位猴乐乐排成三排方阵，敬礼向右行进"
-          onAnimationEnd={event => { if (event.animationName === 'monkeyParadePass') setComplete(true); }}>
-          {RANKS.map((rank, row) => Array.from({ length: 6 }, (_, column) => <div className="paradeMonkey" key={`${row}-${column}`} aria-hidden="true"
+  return <>
+    <span className="paradeAnnouncement" role="status">{assets === 'loading' ? '猴乐乐方阵正在集合。'
+      : assets === 'error' ? '彩蛋暂时未能加载，请稍后再点国旗重试。'
+      : '国庆快乐！猴乐乐方阵向您敬礼。再次点击国旗或按 Escape 可收起。'}</span>
+    {assets === 'error' && <p className="paradeLoadError">彩蛋还没加载好，稍后再点国旗试试</p>}
+    {assets === 'ready' && <div className={`paradeOverlay${reducedMotion ? ' is-static' : ''}`} aria-hidden="true">
+      <div className="paradeScene">
+        <img className="paradeBackdrop" src={BACKDROP} width="1672" height="941" alt="" />
+        <div className="paradeGreeting">国庆快乐</div>
+        <div className="paradeFormation">
+          {RANKS.map((rank, row) => Array.from({ length: 6 }, (_, column) => <div className="paradeMonkey" key={`${row}-${column}`}
             style={{ width: `${rank.size}%`, bottom: `${rank.bottom}%`, left: `${rank.offset + column * 12.5}%`, zIndex: row + 1 }}>
             <span className="paradeMonkeyShadow" />
             <span className="paradeSprite" style={{ backgroundImage: `url("${MARCH_SPRITE}")` }} />
           </div>))}
         </div>
-      </> : <div className="paradeAssetMessage">
-        <Flag size={32} aria-hidden="true" /><p>{status}</p>
-        {assets === 'error' && <button type="button" onClick={() => setAttempt(value => value + 1)}>重新加载</button>}
-      </div>}
-    </div>
-    <footer className="paradeFooter">
-      <div className="paradeCaption"><strong role="status">{status}</strong><span>{motionAllowed ? '18 位猴乐乐 · 三排方阵' : '已遵循系统的减少动态效果设置'}</span></div>
-      <div className="paradeControls">
-        {!motionAllowed ? <button type="button" onClick={replay} disabled={assets !== 'ready'}><Play size={16} aria-hidden="true" />播放动画</button>
-          : <><button type="button" onClick={() => setPaused(value => !value)} disabled={assets !== 'ready' || complete}>
-            {paused ? <Play size={16} aria-hidden="true" /> : <Pause size={16} aria-hidden="true" />}{paused ? '继续' : '暂停'}
-          </button><button type="button" onClick={replay} disabled={assets !== 'ready'}><RotateCcw size={16} aria-hidden="true" />{complete ? '再次检阅' : '重播'}</button></>}
       </div>
-    </footer>
-  </dialog>;
+    </div>}
+  </>;
 }
 
 export default function DashboardParade() {
   const [open, setOpen] = useState(false);
   const starId = useId();
+  const finish = useCallback(() => setOpen(false), []);
   return <>
-    <button type="button" className="dashboardParadeFlag" onClick={() => setOpen(true)} aria-label="国庆彩蛋：猴乐乐阅兵" title="国庆快乐 · 点我看看" aria-haspopup="dialog">
+    <button type="button" className="dashboardParadeFlag" onClick={() => setOpen(value => !value)} aria-label="国庆彩蛋：猴乐乐阅兵" title={open ? '再点一下收起 · Esc 也可退出' : '国庆快乐 · 点我看看'} aria-pressed={open}>
       <svg viewBox="0 0 30 20" width="24" height="16" aria-hidden="true">
         <defs><path id={starId} d="M0-1 .2245-.309 .9511-.309 .3633.118 .5878.809 0 .382-.5878.809-.3633.118-.9511-.309-.2245-.309Z" /></defs>
         <rect width="30" height="20" rx="1" fill="#de2910" />
@@ -134,6 +88,6 @@ export default function DashboardParade() {
         </g>
       </svg>
     </button>
-    {open && createPortal(<ParadeDialog onClose={() => setOpen(false)} />, document.body)}
+    {open && createPortal(<ParadeOverlay onFinish={finish} />, document.body)}
   </>;
 }
