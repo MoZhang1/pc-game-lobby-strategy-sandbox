@@ -27,7 +27,7 @@ export default function AndroidChannelComparison() {
   const y = value => 280 - value * 2.4;
   const point = (c,d) => rows.find(r => r.channel === c && r.date === d);
   const ranking = summary.filter(r => r.users).sort((a,b) => b.clicks/b.users-a.clicks/a.users);
-  return <section className="channelCompare">
+  return <section className="channelCompare"><p className="channelFreshness">渠道数据截至 2026/09/29；本次未提供新渠道表，以下保留上一期数据，不代表 9/30–10/6 的渠道变化。</p>
     <h2>渠道新增用户点击对比</h2>
     <p>数据区间：{dates[0]} 至 {dates.at(-1)}。占比 = 所选区间点击 UV 合计 ÷ 渠道新增用户 UV 合计。</p>
     <div className="channelPanel channelControls">

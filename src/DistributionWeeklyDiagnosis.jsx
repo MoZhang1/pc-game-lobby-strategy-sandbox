@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LAST_NEW_USER_AD_ACTION, NEXT_NEW_USER_PLAN, PREVIOUS_NEW_USER_PLAN } from './distributionNextPlans';
 import currentData from './distributionWeeklyData';
 import channelData from './androidChannelData';
-import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA, CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
+import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA, CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
 import { ANDROID_NEW_USER_EXCLUSIONS } from './androidNewUserExclusions';
 import './android-channel.css';
 
@@ -49,7 +49,7 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
   const review = data.review || {};
   const periodLabel = `${shortDate(data.period.start)}–${shortDate(data.period.end)}`;
   const priorLabel = `${shortDate(data.period.beforeStart)}–${shortDate(data.period.beforeEnd)}`;
-  const historicalPeriods = [{ label: '8/26–9/1', data: PREVIOUS_LOCAL_PACKAGE_GEO_DATA }, { label: '9/2–9/8', data: LATEST_LOCAL_PACKAGE_GEO_DATA }, { label: '9/9–9/15', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA }, { label: '9/16–9/22', data: SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA }].filter(period => period.data.meta.end < data.period.end);
+  const historicalPeriods = [{ label: '8/26–9/1', data: PREVIOUS_LOCAL_PACKAGE_GEO_DATA }, { label: '9/2–9/8', data: LATEST_LOCAL_PACKAGE_GEO_DATA }, { label: '9/9–9/15', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA }, { label: '9/16–9/22', data: SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA }, { label: '9/23–9/29', data: SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA }].filter(period => period.data.meta.end < data.period.end);
   const [provinceScope, setProvinceScope] = useState('focus');
   const [province, setProvince] = useState('全部');
   const [showSmall, setShowSmall] = useState(false);
