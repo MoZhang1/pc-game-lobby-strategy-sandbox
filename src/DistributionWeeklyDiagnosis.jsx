@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { LAST_NEW_USER_AD_ACTION, NEXT_NEW_USER_PLAN, PREVIOUS_NEW_USER_PLAN } from './distributionNextPlans';
 import currentData from './distributionWeeklyData';
 import channelData from './androidChannelData';
-import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA, CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
+import { PREVIOUS_LOCAL_PACKAGE_GEO_DATA, LATEST_LOCAL_PACKAGE_GEO_DATA, CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA, SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA, OCTOBER06_LOCAL_PACKAGE_GEO_DATA } from './localPackageLatestGeoData';
 import { ANDROID_NEW_USER_EXCLUSIONS } from './androidNewUserExclusions';
 import './android-channel.css';
 
@@ -25,18 +25,18 @@ const measures = [
   ['广告位推荐点击 / 页面曝光', 'adClicks', 'pageExposure'],
 ];
 
-function reviewFor(a, b) {
+function reviewFor(a, b, denominatorWarning = false) {
   const config = delta(a, b, 'configuredClicks', 'pageExposure');
-  const reach = delta(a, b, 'pageExposure', 'newUsers');
+  const reach = denominatorWarning ? null : delta(a, b, 'pageExposure', 'newUsers');
   const sample = Math.min(a.pageExposure, b?.pageExposure || 0);
   if (a.province === '未知') return { rank: 7, label: '待归属', action: '补齐城市归属后再判断配置。' };
   if (config == null) return { rank: 7, label: '不可比', action: '缺少前期或本期曝光，保留缺失。' };
   if (sample < 30) return { rank: 6, label: '低样本观察', action: '先复核数据与展示，累计样本后再调整配置。' };
   if (config <= -3 && sample >= 100) return { rank: 0, label: '优先优化', action: '优先调整配置游戏组合和坑位排序；按城市定位下滑来源，单项调整后观察 7 天。' };
-  if (reach <= -8 && Math.min(a.newUsers, b.newUsers) >= 100) return { rank: 1, label: '到达优先', action: '先查新用户展示条件、版本和进入页面路径，再判断是否需要调整游戏配置。' };
+  if (reach != null && reach <= -8 && Math.min(a.newUsers, b.newUsers) >= 100) return { rank: 1, label: '到达优先', action: '先查新用户展示条件、版本和进入页面路径，再判断是否需要调整游戏配置。' };
   if (config <= -3) return { rank: 2, label: '复核后调整', action: '配置点击下降；先核对主要城市与游戏组合，小范围调整，暂不全省回退。' };
   if (config < 0) return { rank: 3, label: '小幅下降', action: '定位下降城市，复核游戏与排序；先保留省级配置并观察稳定性。' };
-  if (reach <= -8) return { rank: 4, label: '到达待复核', action: '核对页面展示条件和流量结构，样本有限，继续观察。' };
+  if (reach != null && reach <= -8) return { rank: 4, label: '到达待复核', action: '核对页面展示条件和流量结构，样本有限，继续观察。' };
   return { rank: 5, label: '保留观察', action: '配置点击持平或改善，保留配置并跟踪后续一周。' };
 }
 
@@ -49,7 +49,7 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
   const review = data.review || {};
   const periodLabel = `${shortDate(data.period.start)}–${shortDate(data.period.end)}`;
   const priorLabel = `${shortDate(data.period.beforeStart)}–${shortDate(data.period.beforeEnd)}`;
-  const historicalPeriods = [{ label: '8/26–9/1', data: PREVIOUS_LOCAL_PACKAGE_GEO_DATA }, { label: '9/2–9/8', data: LATEST_LOCAL_PACKAGE_GEO_DATA }, { label: '9/9–9/15', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA }, { label: '9/16–9/22', data: SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA }, { label: '9/23–9/29', data: SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA }].filter(period => period.data.meta.end < data.period.end);
+  const historicalPeriods = [{ label: '8/26–9/1', data: PREVIOUS_LOCAL_PACKAGE_GEO_DATA }, { label: '9/2–9/8', data: LATEST_LOCAL_PACKAGE_GEO_DATA }, { label: '9/9–9/15', data: CURRENT_WEEK_LOCAL_PACKAGE_GEO_DATA }, { label: '9/16–9/22', data: SEPTEMBER22_LOCAL_PACKAGE_GEO_DATA }, { label: '9/23–9/29', data: SEPTEMBER29_LOCAL_PACKAGE_GEO_DATA }, { label: '9/30–10/6', data: OCTOBER06_LOCAL_PACKAGE_GEO_DATA }].filter(period => period.data.meta.end < data.period.end);
   const [provinceScope, setProvinceScope] = useState('focus');
   const [province, setProvince] = useState('全部');
   const [showSmall, setShowSmall] = useState(false);
@@ -61,10 +61,10 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
   const newAfter = data.newAfter;
   const beforeLabel = `${priorLabel} · 7 天`;
   const afterLabel = `${periodLabel} · 7 天`;
-  const provinces = afterRows.map(a => ({ a, b: before.get(a.province), review: reviewFor(a, before.get(a.province)) }));
+  const provinces = afterRows.map(a => ({ a, b: before.get(a.province), review: reviewFor(a, before.get(a.province), Boolean(review.denominatorWarning)) }));
   const configDelta = r => delta(r.a, r.b, 'configuredClicks', 'pageExposure');
   const reachDelta = r => delta(r.a, r.b, 'pageExposure', 'newUsers');
-  const isFocus = r => r.a.province !== '未知' && ((configDelta(r) != null && configDelta(r) < 0) || (reachDelta(r) != null && reachDelta(r) <= -8));
+  const isFocus = r => r.a.province !== '未知' && ((configDelta(r) != null && configDelta(r) < 0) || (!review.denominatorWarning && reachDelta(r) != null && reachDelta(r) <= -8));
   const priority = provinces.filter(r => r.review.rank === 0);
   const reachPriority = provinces.filter(r => r.review.rank === 1);
   const declines = provinces.filter(r => r.a.province !== '未知' && configDelta(r) != null && configDelta(r) < 0);
@@ -88,18 +88,19 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
     <div className="channelPanel">
       <h2>本地包运营配置与广告位推荐复盘 · {periodLabel}</h2>
       <p>{review.action || LAST_NEW_USER_AD_ACTION}</p>
-      <p><b>{review.status || '9/12 数据已修复并纳入统计。'}</b>{priorLabel} 与 {periodLabel} 均为完整 7 天，按相同星期构成比较。</p>
+      <p><b>{review.status || '9/12 数据已修复并纳入统计。'}</b>{priorLabel} 与 {periodLabel} 城市数据均保留完整 7 天；新用户转化按下方有效天数比较。</p>
       <p><b>配置优先：{names(priority)}；页面到达优先：{names(reachPriority)}。</b>共有 {declines.length} 个已归属省份配置点击率下降，下面按下降幅度、曝光样本和问题环节列出建议。</p>
     </div>
     <div className="channelPanel"><h3>本地包前后数据对比</h3>
-      <p>运营配置主指标为配置推荐点击 UV / 页面曝光 UV；总启动为安卓新用户整体结果。</p>
+      <p>运营配置主指标为配置推荐点击 UV / 页面曝光 UV；总启动为安卓新用户整体结果。</p>{review.denominatorWarning && <p className="reviewCallout"><b>口径说明：</b>{review.denominatorWarning}</p>}
       <div className="channelTableWrap"><table aria-label="本地包前后数据对比"><thead><tr><th>指标</th><th>{beforeLabel}</th><th>{afterLabel}</th><th>变化</th></tr></thead><tbody>
-        <tr><th>新增 UV 合计</th><td>{newBefore.users.toLocaleString()}</td><td>{newAfter.users.toLocaleString()}</td><td>{newAfter.users - newBefore.users >= 0 ? '+' : ''}{(newAfter.users - newBefore.users).toLocaleString()}</td></tr>
+        <tr><th>安卓新用户有效 UV 合计<small>前 {newBefore.events.TOTAL_START.days} 天 / 后 {newAfter.events.TOTAL_START.days} 天</small></th><td>{newBefore.users.toLocaleString()}</td><td>{newAfter.users.toLocaleString()}</td><td>{newAfter.users - newBefore.users >= 0 ? '+' : ''}{(newAfter.users - newBefore.users).toLocaleString()}</td></tr>
+        <tr><th>本地包原始新增 UV（7 天）</th><td>{beforeTotal.newUsers.toLocaleString()}</td><td>{afterTotal.newUsers.toLocaleString()}</td><td>{review.denominatorWarning ? "分母含异常，仅供核对" : afterTotal.newUsers - beforeTotal.newUsers}</td></tr>
         <tr><th>本地包页面曝光 UV</th><td>{beforeTotal.pageExposure.toLocaleString()}</td><td>{afterTotal.pageExposure.toLocaleString()}</td><td>{afterTotal.pageExposure - beforeTotal.pageExposure >= 0 ? '+' : ''}{afterTotal.pageExposure - beforeTotal.pageExposure}</td></tr>
-        <tr><th>总启动占比</th><td><MetricCell row={{ start: newBefore.events.TOTAL_START.uv, users: newBefore.users }} numerator="start" denominator="users" /></td><td><MetricCell row={{ start: newAfter.events.TOTAL_START.uv, users: newAfter.users }} numerator="start" denominator="users" /></td><td>{pp(newAfter.events.TOTAL_START.rate - newBefore.events.TOTAL_START.rate)}</td></tr>
+        <tr><th>总启动占比<small>按新用户有效天数</small></th><td><MetricCell row={{ start: newBefore.events.TOTAL_START.uv, users: newBefore.users }} numerator="start" denominator="users" /></td><td><MetricCell row={{ start: newAfter.events.TOTAL_START.uv, users: newAfter.users }} numerator="start" denominator="users" /></td><td>{pp(newAfter.events.TOTAL_START.rate - newBefore.events.TOTAL_START.rate)}</td></tr>
         {measures.map(([name, n, d]) => <tr key={n + d}><th>{name}</th><td><MetricCell row={beforeTotal} numerator={n} denominator={d} /></td><td><MetricCell row={afterTotal} numerator={n} denominator={d} /></td><td className={delta(afterTotal, beforeTotal, n, d) < 0 ? 'negative' : 'positive'}>{pp(delta(afterTotal, beforeTotal, n, d))}</td></tr>)}
       </tbody></table></div>
-      <p><b>{review.adHeadline || '广告位推荐下降，当期计划继续换游戏。'}</b>点击 UV {beforeTotal.adClicks} → {afterTotal.adClicks}；点击 / 页面曝光 {rate(beforeTotal.adClicks, beforeTotal.pageExposure)} → {rate(afterTotal.adClicks, afterTotal.pageExposure)}（{pp(delta(afterTotal, beforeTotal, 'adClicks', 'pageExposure'))}），点击 / 新增 {rate(beforeTotal.adClicks, newBefore.users)} → {rate(afterTotal.adClicks, newAfter.users)}。{review.adFollowup || '具体生效日未记录，当前按完整周前后比较。'}</p>
+      <p><b>{review.adHeadline || '广告位推荐下降，当期计划继续换游戏。'}</b>点击 UV {beforeTotal.adClicks} → {afterTotal.adClicks}；点击 / 页面曝光 {rate(beforeTotal.adClicks, beforeTotal.pageExposure)} → {rate(afterTotal.adClicks, afterTotal.pageExposure)}（{pp(delta(afterTotal, beforeTotal, 'adClicks', 'pageExposure'))}），点击 / 新增 {rate(beforeTotal.adClicks, beforeTotal.newUsers)} → {rate(afterTotal.adClicks, afterTotal.newUsers)}。{review.adFollowup || '具体生效日未记录，当前按完整周前后比较。'}</p>
       <p>周合计为每日 UV 之和，非跨日去重人数；各类点击用户可重叠。广告位比例以本地包页面曝光为分母，源表没有独立的广告位曝光数据。</p>
     </div>
     <div className="channelPanel"><h3>配置地区分组对比</h3>
@@ -120,10 +121,10 @@ export default function DistributionWeeklyDiagnosis({ geoOnly = false, data = cu
       <label>省份 <select aria-label="选择诊断省份" value={province} onChange={e => setProvince(e.target.value)}><option value="全部">全部</option>{afterRows.map(r => <option key={r.province} value={r.province}>{r.province}</option>)}</select></label>{' '}
       <label><input type="checkbox" checked={showSmall} onChange={e => setShowSmall(e.target.checked)} />显示本期曝光不足 15 的城市</label>
       <p>当前显示 {cities.length} 个城市；小样本仅作排查线索。省级合计可能包含来源直接标注的省级地区行。</p>
-      <div className="channelTableWrap"><table aria-label="本周城市转化诊断"><thead><tr><th>省份 / 城市</th><th>新增 UV 前→后</th><th>页面到达 前→后</th><th>配置点击 前</th><th>配置点击 后</th><th>配置变化</th><th>建议动作</th></tr></thead><tbody>{cities.map(a => { const b = cityBefore.get(key(a)); return <tr key={key(a)}><th>{a.province} · {a.city}</th><td>{b?.newUsers ?? '—'} → {a.newUsers}</td><td>{rate(b?.pageExposure, b?.newUsers)} → {rate(a.pageExposure, a.newUsers)}</td><td><MetricCell row={b} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={a} numerator="configuredClicks" denominator="pageExposure" /></td><td>{pp(delta(a, b, 'configuredClicks', 'pageExposure'))}</td><td>{reviewFor(a, b).action}</td></tr>; })}</tbody></table></div>
+      <div className="channelTableWrap"><table aria-label="本周城市转化诊断"><thead><tr><th>省份 / 城市</th><th>新增 UV 前→后</th><th>页面到达 前→后</th><th>配置点击 前</th><th>配置点击 后</th><th>配置变化</th><th>建议动作</th></tr></thead><tbody>{cities.map(a => { const b = cityBefore.get(key(a)); return <tr key={key(a)}><th>{a.province} · {a.city}</th><td>{b?.newUsers ?? '—'} → {a.newUsers}</td><td>{rate(b?.pageExposure, b?.newUsers)} → {rate(a.pageExposure, a.newUsers)}</td><td><MetricCell row={b} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={a} numerator="configuredClicks" denominator="pageExposure" /></td><td>{pp(delta(a, b, 'configuredClicks', 'pageExposure'))}</td><td>{reviewFor(a, b, Boolean(review.denominatorWarning)).action}</td></tr>; })}</tbody></table></div>
     </div>
-    {!geoOnly && <details className="channelPanel"><summary>逐日数据核对</summary><div className="channelTableWrap"><table aria-label="本地包逐日核对"><thead><tr><th>日期</th><th>新增 / 启动 UV</th><th>总启动占比</th><th>页面到达率</th><th>配置点击率</th><th>广告位推荐点击率</th></tr></thead><tbody>{data.daily.map(r => ANDROID_NEW_USER_EXCLUSIONS[r.date] ? <tr key={r.date}><th>{r.date.slice(5)}</th><td colSpan={5}>{ANDROID_NEW_USER_EXCLUSIONS[r.date]}</td></tr> : <tr key={r.date}><th>{r.date.slice(5)}</th><td>{r.newUsers} / {r.start}</td><td>{rate(r.start, r.newUsers)}</td><td><MetricCell row={r} numerator="pageExposure" denominator="newUsers" /></td><td><MetricCell row={r} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={r} numerator="adClicks" denominator="pageExposure" /></td></tr>)}</tbody></table></div></details>}
+    {!geoOnly && <details className="channelPanel"><summary>逐日数据核对</summary><div className="channelTableWrap"><table aria-label="本地包逐日核对"><thead><tr><th>日期</th><th>新增 / 启动 UV</th><th>总启动占比</th><th>页面到达率</th><th>配置点击率</th><th>广告位推荐点击率</th></tr></thead><tbody>{data.daily.map(r => ANDROID_NEW_USER_EXCLUSIONS[r.date] ? <tr key={r.date}><th>{r.date.slice(5)}<small>数据异常</small></th><td>{r.newUsers} / {r.start}<small>保留原始记录</small></td><td>已排除<small>{ANDROID_NEW_USER_EXCLUSIONS[r.date]}</small></td><td><MetricCell row={r} numerator="pageExposure" denominator="newUsers" /><small>原始分母异常</small></td><td><MetricCell row={r} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={r} numerator="adClicks" denominator="pageExposure" /></td></tr> : <tr key={r.date}><th>{r.date.slice(5)}</th><td>{r.newUsers} / {r.start}</td><td>{rate(r.start, r.newUsers)}</td><td><MetricCell row={r} numerator="pageExposure" denominator="newUsers" /></td><td><MetricCell row={r} numerator="configuredClicks" denominator="pageExposure" /></td><td><MetricCell row={r} numerator="adClicks" denominator="pageExposure" /></td></tr>)}</tbody></table></div></details>}
     <div className="channelPanel"><h3>{review.planTitle || '当时计划 · 9/16–9/22'}</h3><p>{isLatest ? NEXT_NEW_USER_PLAN : review.planText || PREVIOUS_NEW_USER_PLAN}</p><p>地区源表没有分城市的总启动、分游戏或坑位数据；先依据页面到达与配置点击定位省市，再核对具体游戏和位置。</p></div>
-    <details className="channelPanel"><summary>数据来源与口径</summary><p>来自《本地包分城市.xlsx》和《最安卓新用户点击转化.xlsx》，本次观察截至 {data.period.end.replaceAll('-', '/')}。9/12 已补齐并纳入汇总与趋势；本期完整 7 天仍有 {data.geo.after.meta.unmappedNewUsers} 名新增（{rate(data.geo.after.meta.unmappedNewUsers, newAfter.users)}）无法归属省份，保留展示。所有占比按分子、分母合计重算。</p><p>渠道对比数据截至 {channelData.meta.end.replaceAll('-', '/')}，覆盖百度品专、360移动、百度_m；渠道点击率以各渠道新增 UV 为分母，三渠道不代表平台全部新增。</p></details>
+    <details className="channelPanel"><summary>数据来源与口径</summary><p>来自《本地包分城市.xlsx》和《最安卓新用户点击转化.xlsx》，本次观察截至 {data.period.end.replaceAll('-', '/')}。9/12 已补齐并纳入汇总与趋势；本期完整 7 天仍有 {data.geo.after.meta.unmappedNewUsers} 名新增（{rate(data.geo.after.meta.unmappedNewUsers, afterTotal.newUsers)}）无法归属省份，保留展示。所有占比按分子、分母合计重算。</p><p>渠道对比数据截至 {channelData.meta.end.replaceAll('-', '/')}，覆盖百度品专、360移动、百度_m；渠道点击率以各渠道新增 UV 为分母，三渠道不代表平台全部新增。</p></details>
   </section>;
 }

@@ -12,10 +12,13 @@ parser.add_argument('--end', help='Inclusive reporting cutoff (YYYY-MM-DD).')
 parser.add_argument('--output', type=Path, help='Save the snapshot instead of printing its rows.')
 parser.add_argument('--dip', action='store_true', help='Legacy September 7 comparison.')
 parser.add_argument('--channel', action='store_true', help='Read the Android channel-click workbook only.')
+parser.add_argument('--source-dir', type=Path, help='Directory containing the four source workbooks.')
+parser.add_argument('--suffix', default='', help='Filename suffix before .xlsx, for example (2).')
 args = parser.parse_args()
+if args.source_dir: SOURCE = args.source_dir
 coverage = {}
 def read(name):
-    workbook = load_workbook(SOURCE/name, data_only=True, read_only=True)
+    workbook = load_workbook(SOURCE/name.replace('.xlsx', args.suffix + '.xlsx'), data_only=True, read_only=True)
     rows = [r for r in list(workbook.active.values)[1:] if r[0]]
     dates = sorted({date(r[0]) for r in rows})
     coverage[name] = dict(sheet=workbook.active.title, rows=len(rows), start=dates[0], end=dates[-1], days=len(dates))

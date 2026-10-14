@@ -1,5 +1,5 @@
 // September 12 was corrected in both source workbooks and restored to reporting.
-export const ANDROID_NEW_USER_EXCLUSIONS = {};
+export const ANDROID_NEW_USER_EXCLUSIONS = {"2026-10-09":"新增数据异常，已排除","2026-10-13":"新增数据异常，已排除"};
 
 export function markAndroidNewUserExclusions(rows, comparisonExclusions = []) {
   return rows.map(row => {
