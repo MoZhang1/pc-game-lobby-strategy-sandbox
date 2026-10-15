@@ -5,11 +5,12 @@ import './android-channel.css';
 const channels = ['百度品专', '360移动', '百度_m'];
 const colors = ['#2563eb', '#d08a15', '#0d9488'];
 const dates = [...new Set(data.rows.map(r => r.date))].sort();
+const excludedDates = new Set(data.meta.excludedDates || []);
 const events = ['TOTAL_START', ...Object.keys(data.events).filter(e => e !== 'TOTAL_START')];
 const pct = (n, d) => d ? (100 * n / d).toFixed(2) + '%' : '—';
 const num = n => n.toLocaleString('zh-CN');
 function aggregate(rows, channel, event) {
-  const valid = rows.filter(r => r.channel === channel && r.clicks[event] != null);
+  const valid = rows.filter(r => r.channel === channel && !excludedDates.has(r.date) && r.clicks[event] != null);
   return { users: valid.reduce((s,r) => s+r.users,0), clicks: valid.reduce((s,r) => s+r.clicks[event],0), days: valid.length };
 }
 
@@ -21,25 +22,27 @@ export default function AndroidChannelComparison() {
   const [hover, setHover] = useState(null);
   const rows = data.rows.filter(r => r.date >= start && r.date <= end);
   const days = dates.filter(d => d >= start && d <= end);
+  const excludedDays = days.filter(d => excludedDates.has(d));
   const summary = channels.map(c => ({channel:c,...aggregate(rows,c,'TOTAL_START')}));
   const total = summary.reduce((s,r) => s+r.users,0);
   const x = i => 64 + i / Math.max(1,days.length-1) * 890;
   const y = value => 280 - value * 2.4;
   const point = (c,d) => rows.find(r => r.channel === c && r.date === d);
   const ranking = summary.filter(r => r.users).sort((a,b) => b.clicks/b.users-a.clicks/a.users);
-  return <section className="channelCompare"><p className="channelFreshness">渠道数据截至 2026/09/29；本次未提供新渠道表，以下保留上一期数据，不代表 9/30–10/6 的渠道变化。</p>
+  return <section className="channelCompare"><p className="channelFreshness">渠道数据截至 {data.meta.end.replaceAll('-', '/')}。10/9、10/13 沿用已确认的安卓新增异常日期，排除正常汇总，趋势留空；原始记录保留，悬停可查。本渠道表无法单独确认异常成因。</p>
     <h2>渠道新增用户点击对比</h2>
-    <p>数据区间：{dates[0]} 至 {dates.at(-1)}。占比 = 所选区间点击 UV 合计 ÷ 渠道新增用户 UV 合计。</p>
+    <p>数据区间：{dates[0]} 至 {dates.at(-1)}。占比 = 所选区间有效日点击 UV 合计 ÷ 同期渠道新增用户 UV 合计；分子、分母同步排除异常日。</p>
     <div className="channelPanel channelControls">
       <label>开始日期 <input aria-label="渠道开始日期" type="date" min={dates[0]} max={end} value={start} onChange={e => {setStart(e.target.value);setHover(null);}} /></label>
       <label>结束日期 <input aria-label="渠道结束日期" type="date" min={start} max={dates.at(-1)} value={end} onChange={e => {setEnd(e.target.value);setHover(null);}} /></label>
       <button onClick={() => {setStart(dates[0]);setEnd(dates.at(-1));setHover(null);}}>全部日期</button>
     </div>
     {start > end || !days.length ? <p role="alert">请选择有效日期区间。</p> : <>
+    <p role="status">所选区间 {days.length} 天，排除异常 {excludedDays.length} 天{excludedDays.length ? `（${excludedDays.map(d => d.slice(5).replace('-', '/')).join('、')}）` : ''}；各渠道缺失记录另行保留，不补零。</p>
     <div className="channelCards">{summary.map((r,i) => <article className="channelPanel" key={r.channel}>
       <h3 style={{color:colors[i]}}>{r.channel}</h3><p>总启动占比</p><strong>{pct(r.clicks,r.users)}</strong>
       <p>启动 {num(r.clicks)} / 新增 {num(r.users)}</p>
-      <p>三渠道新增量占比 {pct(r.users,total)} · 有记录 {r.days}/{days.length} 天</p>
+      <p>三渠道新增量占比 {pct(r.users,total)} · 有效记录 {r.days}/{days.length} 天</p>
       {r.users < 100 && <small>样本较小，比例波动不代表稳定效果。</small>}
     </article>)}</div>
     <div className="channelPanel">
@@ -47,20 +50,20 @@ export default function AndroidChannelComparison() {
       <div className="channelControls">{channels.map((c,i) => <label key={c} style={{color:colors[i]}}><input type="checkbox" checked={selected.includes(c)} onChange={() => setSelected(selected.includes(c) ? selected.filter(s=>s!==c) : [...selected,c])}/>{c}</label>)}</div>
       {!selected.length ? <p className="channelEmpty">请选择要对比的渠道。</p> : <svg viewBox="0 0 1000 330" role="img" aria-label={data.events[event]+'三渠道每日占比趋势'} onMouseLeave={() => setHover(null)}>
         {[0,25,50,75,100].map(v => <g key={v}><line x1="64" x2="954" y1={y(v)} y2={y(v)} stroke="#e5e7eb"/><text x="52" y={y(v)+5} textAnchor="end" fill="#777" fontSize="13">{v}%</text></g>)}
-        {channels.filter(c=>selected.includes(c)).map(c => {let connected=false;const path=days.map((d,i)=>{const r=point(c,d);if(!r || !r.users || r.clicks[event]==null){connected=false;return '';}const p=(connected?'L':'M')+x(i)+','+y(r.clicks[event]/r.users*100);connected=true;return p;}).join(' ');return <g key={c}><path d={path} fill="none" stroke={colors[channels.indexOf(c)]} strokeWidth="2.5"/>{days.map((d,i)=>{const r=point(c,d);return r?.users && r.clicks[event]!=null ? <circle key={d} cx={x(i)} cy={y(r.clicks[event]/r.users*100)} r="3" fill={colors[channels.indexOf(c)]}/> : null;})}</g>;})}
-        {days.map((d,i)=><g key={d}>{(i%Math.max(1,Math.ceil(days.length/8))===0 || i===days.length-1)&&<text x={x(i)} y="310" textAnchor="middle" fill="#777" fontSize="13">{d.slice(5)}</text>}<rect x={x(i)-445/Math.max(1,days.length-1)} y="25" width={days.length===1?890:890/(days.length-1)} height="260" fill="transparent" onMouseEnter={()=>setHover(d)} onTouchStart={()=>setHover(d)}/></g>)}
+        {channels.filter(c=>selected.includes(c)).map(c => {let connected=false;const path=days.map((d,i)=>{const r=point(c,d);if(excludedDates.has(d) || !r || !r.users || r.clicks[event]==null){connected=false;return '';}const p=(connected?'L':'M')+x(i)+','+y(r.clicks[event]/r.users*100);connected=true;return p;}).join(' ');return <g key={c}><path d={path} fill="none" stroke={colors[channels.indexOf(c)]} strokeWidth="2.5"/>{days.map((d,i)=>{const r=point(c,d);return !excludedDates.has(d) && r?.users && r.clicks[event]!=null ? <circle key={d} cx={x(i)} cy={y(r.clicks[event]/r.users*100)} r="3" fill={colors[channels.indexOf(c)]}/> : null;})}</g>;})}
+        {days.map((d,i)=><g key={d}>{excludedDates.has(d) && <rect x={x(i)-4} y="25" width="8" height="255" fill="#f59e0b" opacity="0.15"><title>{d} 异常日，已排除</title></rect>}{(i%Math.max(1,Math.ceil(days.length/8))===0 || i===days.length-1)&&<text x={x(i)} y="310" textAnchor="middle" fill="#777" fontSize="13">{d.slice(5)}</text>}<rect x={days.length===1 ? 64 : x(i)-445/Math.max(1,days.length-1)} y="25" width={days.length===1?890:890/(days.length-1)} height="260" fill="transparent" onMouseEnter={()=>setHover(d)} onTouchStart={()=>setHover(d)}/></g>)}
         {hover && <line x1={x(days.indexOf(hover))} x2={x(days.indexOf(hover))} y1="25" y2="280" stroke="#999" strokeDasharray="4 4" pointerEvents="none"/>}
       </svg>}
-      <div className="channelHover" aria-live="polite">{hover ? <><b>{hover}</b>{selected.map(c=>{const r=point(c,hover);return <span key={c}>{c}：{r ? pct(r.clicks[event],r.users)+'（'+r.clicks[event]+'/'+r.users+'）' : '无记录'}</span>;})}</> : '鼠标移到折线图上，可查看当天比例及点击 UV / 新增 UV。'}</div>
+      <div className="channelHover" aria-live="polite">{hover ? <><b>{hover}{excludedDates.has(hover) ? " · 异常日（已排除，以下为原始值）" : ""}</b>{selected.map(c=>{const r=point(c,hover);return <span key={c}>{c}：{r && r.clicks[event]!=null ? pct(r.clicks[event],r.users)+'（'+r.clicks[event]+'/'+r.users+'）' : '无记录'}</span>;})}</> : '鼠标移到折线图上，可查看当天比例及点击 UV / 新增 UV；浅橙色标记为已排除异常日。'}</div>
     </div>
     <div className="channelPanel"><h3>所选区间结论</h3>
-      <p>{ranking.map(r=>r.channel+' '+pct(r.clicks,r.users)).join('；')}。</p>
+      <p>{ranking.length ? ranking.map(r=>r.channel+' '+pct(r.clicks,r.users)).join('；')+'。' : '所选区间无有效新增数据，无法计算占比或比较渠道。'}</p>
       <p>{summary.filter(r=>r.users>=100).sort((a,b)=>b.users-a.users).slice(0,1).map(r=>r.channel+'占三渠道新增量的 '+pct(r.users,total)+'，应优先关注该渠道总启动及模块点击变化。')}</p>
       <p>360移动样本量较小，建议结合更长周期观察。渠道间差异是用户来源与分发效果的共同结果，不能直接认定为配置带来的提升。</p>
     </div>
     <div className="channelPanel"><h3>模块点击对比</h3><p>单元格为占比及点击 UV。各模块可能重复点击，不相加替代总启动。</p>
     <div className="channelTableWrap"><table><thead><tr><th>事件</th>{channels.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{events.map(e=><tr key={e}><th>{data.events[e]}</th>{channels.map(c=>{const a=aggregate(rows,c,e);return <td key={c}>{pct(a.clicks,a.users)}<small>{num(a.clicks)} / {num(a.users)}</small></td>;})}</tr>)}</tbody></table></div></div>
-    <p>来源：分渠道安卓新增点击.xlsx。仅包含表内三渠道，不代表平台全部新增用户。占比按每日 UV 合计重算，非跨日去重；无记录日期保留缺失，不补为零；总启动使用源表 TOTAL_START。</p>
+    <p>来源：分渠道安卓新增点击.xlsx。仅包含表内三渠道，不代表平台全部新增用户。占比按有效日 UV 合计重算，非跨日去重；10/9、10/13 原始记录保留但不纳入汇总；无记录日期保留缺失，不补为零；总启动使用源表 TOTAL_START。</p>
     </>}
   </section>;
 }
