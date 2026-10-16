@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import data from './androidChannelData';
+import ChannelDifferenceStudy from './ChannelDifferenceStudy';
 import './android-channel.css';
 
 const channels = ['百度品专', '360移动', '百度_m'];
@@ -31,6 +32,7 @@ export default function AndroidChannelComparison() {
   const ranking = summary.filter(r => r.users).sort((a,b) => b.clicks/b.users-a.clicks/a.users);
   return <section className="channelCompare"><p className="channelFreshness">渠道数据截至 {data.meta.end.replaceAll('-', '/')}。10/9、10/13 沿用已确认的安卓新增异常日期，排除正常汇总，趋势留空；原始记录保留，悬停可查。本渠道表无法单独确认异常成因。</p>
     <h2>渠道新增用户点击对比</h2>
+    <a className="channelStudyLink" href="#channel-difference-study">查看渠道差异对比专项 · 百度品专与百度_m</a>
     <p>数据区间：{dates[0]} 至 {dates.at(-1)}。占比 = 所选区间有效日点击 UV 合计 ÷ 同期渠道新增用户 UV 合计；分子、分母同步排除异常日。</p>
     <div className="channelPanel channelControls">
       <label>开始日期 <input aria-label="渠道开始日期" type="date" min={dates[0]} max={end} value={start} onChange={e => {setStart(e.target.value);setHover(null);}} /></label>
@@ -65,5 +67,6 @@ export default function AndroidChannelComparison() {
     <div className="channelTableWrap"><table><thead><tr><th>事件</th>{channels.map(c=><th key={c}>{c}</th>)}</tr></thead><tbody>{events.map(e=><tr key={e}><th>{data.events[e]}</th>{channels.map(c=>{const a=aggregate(rows,c,e);return <td key={c}>{pct(a.clicks,a.users)}<small>{num(a.clicks)} / {num(a.users)}</small></td>;})}</tr>)}</tbody></table></div></div>
     <p>来源：分渠道安卓新增点击.xlsx。仅包含表内三渠道，不代表平台全部新增用户。占比按有效日 UV 合计重算，非跨日去重；10/9、10/13 原始记录保留但不纳入汇总；无记录日期保留缺失，不补为零；总启动使用源表 TOTAL_START。</p>
     </>}
+    <ChannelDifferenceStudy />
   </section>;
 }
