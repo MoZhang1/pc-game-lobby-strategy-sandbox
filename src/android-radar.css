@@ -5,3 +5,9 @@
 html:has(.ar-app),body:has(.ar-app),#root:has(.ar-app){min-width:0;width:100%}
 
 .ar-operating-scope{padding:12px 15px;border:1px solid #dce7f6;background:#eef5ff;border-radius:7px;color:#365c8f}.ar-pending-list{max-height:260px;overflow:auto;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}.ar-pending-list p{font-size:12px}.ar-pending-list small{display:block;font-size:10px;color:#7b8799}@media(max-width:720px){.ar-pending-list{grid-template-columns:1fr 1fr}}
+
+/* Radar is content within the shared report shell, never a second application sidebar. */
+.ar-app.ar-embedded{min-height:0;background:transparent}
+.ar-embedded .ar-main{margin:0;padding:0;max-width:none}
+.ar-embedded .ar-heading>a{display:flex}
+.ar-embedded .ar-heading{flex-wrap:wrap}

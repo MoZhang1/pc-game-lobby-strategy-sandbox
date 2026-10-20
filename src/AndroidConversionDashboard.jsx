@@ -1,5 +1,7 @@
 import { ANDROID_NEW_USER_EXCLUSIONS, markAndroidNewUserExclusions } from './androidNewUserExclusions';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { dashboardUrl, readDashboardRoute } from './dashboardRoute';
+const AndroidRadarDashboard = React.lazy(() => import('./AndroidRadarDashboard'));
 import { NEW_USER_POPUP, NEW_USER_POPUP_UV } from './androidNewUserPopupData';
 import AndroidChannelComparison from './AndroidChannelComparison';
 import DashboardCelebration from './DashboardCelebration';
@@ -314,9 +316,8 @@ function PcActiveExperimentReview() {
   </section>;
 }
 
-function TargetGamePage({ platform }) {
+function TargetGamePage({ platform, distributionTab, setDistributionTab }) {
   const isPc = platform === 'pc';
-  const [distributionTab, setDistributionTab] = useState('overview');
   const name = isPc ? 'PC 新大厅老用户' : '安卓活跃用户';
   const first = TARGET_GAME_MONTHS[0]; const latest = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 1]; const previous = TARGET_GAME_MONTHS[TARGET_GAME_MONTHS.length - 2];
   const change = latest[platform].total - first[platform].total;
@@ -488,8 +489,7 @@ function ReviewPage({ experimentIds = EXPERIMENTS.map(item => item.id), title = 
   </>;
 }
 
-function AndroidNewUserPage() {
-  const [tab, setTab] = useState('global');
+function AndroidNewUserPage({ tab, setTab }) {
   return <><header className="pageIntro"><div><h1>安卓新用户分发数据</h1><p>纯新增用户的总启动、模块点击与实验复盘</p></div><span>底层数据至 2026/10/15 · 周复盘至10/13 · 每周三更新观察周</span></header>
     <div className="activeDistributionTabs" role="tablist" aria-label="安卓新用户分发页签"><button role="tab" aria-selected={tab === 'global'} className={tab === 'global' ? 'selected' : ''} onClick={() => setTab('global')}>全局数据</button><button role="tab" aria-selected={tab === 'review'} className={tab === 'review' ? 'selected' : ''} onClick={() => setTab('review')}>实验复盘</button><button role="tab" aria-selected={tab === 'local-package-geo'} className={tab === 'local-package-geo' ? 'selected' : ''} onClick={() => setTab('local-package-geo')}>本地包分城市数据</button><button role="tab" aria-selected={tab === 'channels'} className={tab === 'channels' ? 'selected' : ''} onClick={() => setTab('channels')}>渠道对比</button></div>
     {tab === 'global' ? <GlobalDataPage embedded /> : tab === 'review' ? <ReviewPage key="new-user-experiment-review" embedded experimentIds={NEW_USER_EXPERIMENT_IDS} title="实验复盘" subtitle="安卓新用户 · 本地热门与本地包按周统一复盘" /> : tab === 'channels' ? <AndroidChannelComparison /> : <LocalPackageGeoReview />}
@@ -497,9 +497,39 @@ function AndroidNewUserPage() {
 }
 
 function ConversionDashboard() {
-  const [page, setPage] = useState('android-new-user');
-  const activeGroup = page === 'android-new-user' ? 'new' : 'active';
-  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light"><aside className="reportNav"><div className="reportBrand"><div className="reportBrandTitle"><span>平台分发效果看板</span><DashboardParade /></div><small>用户分发数据分析</small></div><DashboardCelebration /><nav aria-label="报告导航"><button className={`navGroup ${activeGroup === 'new' ? 'selected' : ''}`} onClick={() => setPage('android-new-user')}><BarChart3 />新用户分发</button>{activeGroup === 'new' && <div className="navChildren"><button className={page === 'android-new-user' ? 'selected' : ''} onClick={() => setPage('android-new-user')}>安卓新用户分发</button></div>}<button className={`navGroup ${activeGroup === 'active' ? 'selected' : ''}`} onClick={() => setPage('pc-distribution')}><TrendingUp />活跃用户分发</button>{activeGroup === 'active' && <div className="navChildren"><button className={page === 'pc-distribution' ? 'selected' : ''} onClick={() => setPage('pc-distribution')}>PC 活跃用户分发数据</button><button className={page === 'android-distribution' ? 'selected' : ''} onClick={() => setPage('android-distribution')}>安卓活跃用户分发数据</button></div>}<button className="navGroup" onClick={() => { window.location.search = "?page=android-radar"; }}><BarChart3 />安卓游戏经营对比</button></nav><p>数据由人工补充<br />更新后生成本地报告</p></aside><main className="reportMain"><div className="reportContent">{page === 'android-new-user' ? <AndroidNewUserPage /> : <TargetGamePage platform={page === 'pc-distribution' ? 'pc' : 'android'} />}</div></main></div>;
+  const [route, setRoute] = useState(() => readDashboardRoute(window.location.href));
+  const radarGame = useRef(route.game);
+  const page = route.page;
+  const activeGroup = page === 'android-conversion' ? 'new' : page === 'android-radar' ? 'radar' : 'active';
+  useEffect(() => {
+    const sync = () => { const next = readDashboardRoute(window.location.href); radarGame.current = next.game; setRoute(next); };
+    const initial = readDashboardRoute(window.location.href);
+    const requested = new URLSearchParams(window.location.search).get('page');
+    if (requested && requested !== initial.page) history.replaceState(null, '', dashboardUrl(window.location.href, initial));
+    window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+  useEffect(() => { document.title = page === 'android-radar' ? '安卓游戏经营对比 · 平台分发效果看板' : '平台分发效果看板'; }, [page]);
+  function navigate(nextPage, tab) {
+    if (page === 'android-radar') radarGame.current = new URLSearchParams(window.location.search).get('game') || radarGame.current;
+    const next = { page: nextPage, tab: tab || (nextPage === 'android-conversion' ? 'global' : 'overview'), game: radarGame.current };
+    const url = dashboardUrl(window.location.href, next);
+    if (url.href !== window.location.href) history.pushState(null, '', url);
+    setRoute(next);
+  }
+  const changeTab = tab => navigate(page, tab);
+  return <div className="astryxReport" data-astryx-theme="neutral" data-astryx-media="light">
+    <aside className="reportNav"><div className="reportBrand"><div className="reportBrandTitle"><span>平台分发效果看板</span><DashboardParade /></div><small>用户分发数据分析</small></div><DashboardCelebration />
+      <nav aria-label="报告导航">
+        <button className={`navGroup ${activeGroup === 'new' ? 'selected' : ''}`} onClick={() => navigate('android-conversion')}><BarChart3 />新用户分发</button>
+        <div className="navChildren"><button className={page === 'android-conversion' ? 'selected' : ''} aria-current={page === 'android-conversion' ? 'page' : undefined} onClick={() => navigate('android-conversion')}>安卓新用户分发</button></div>
+        <button className={`navGroup ${activeGroup === 'active' ? 'selected' : ''}`} onClick={() => navigate('pc-distribution')}><TrendingUp />活跃用户分发</button>
+        <div className="navChildren"><button className={page === 'pc-distribution' ? 'selected' : ''} aria-current={page === 'pc-distribution' ? 'page' : undefined} onClick={() => navigate('pc-distribution')}>PC 活跃用户分发数据</button><button className={page === 'android-distribution' ? 'selected' : ''} aria-current={page === 'android-distribution' ? 'page' : undefined} onClick={() => navigate('android-distribution')}>安卓活跃用户分发数据</button></div>
+        <button className={`navGroup ${activeGroup === 'radar' ? 'selected' : ''}`} aria-current={page === 'android-radar' ? 'page' : undefined} onClick={() => navigate('android-radar')}><BarChart3 />安卓游戏经营对比</button>
+      </nav><p>平台分发效果看板<br />数据口径与观察周期见各页面</p>
+    </aside>
+    <main className="reportMain"><div className="reportContent">{page === 'android-radar' ? <React.Suspense fallback={<p role="status">正在加载经营对比…</p>}><AndroidRadarDashboard key={route.game} onNavigate={() => navigate('android-conversion')} /></React.Suspense> : page === 'android-conversion' ? <AndroidNewUserPage tab={route.tab} setTab={changeTab} /> : <TargetGamePage platform={page === 'pc-distribution' ? 'pc' : 'android'} distributionTab={route.tab} setDistributionTab={changeTab} />}</div></main>
+  </div>;
 }
 
 export default ConversionDashboard;
