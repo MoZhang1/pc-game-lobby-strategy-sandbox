@@ -1,0 +1,571 @@
+{
+  "source": "游戏工作室信息表.xlsx",
+  "sheet": "移动",
+  "key": "平台 + 游戏ID",
+  "matched": 138,
+  "unmatched": 2,
+  "conflicts": 0,
+  "sourceSha256": "fbd01d27afa86ef3a1cbed935fe41f71fab2e090dcf3177ba862677da7f57321",
+  "games": {
+    "81": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "53": {
+      "studio": "斗雀工作室",
+      "status": "matched"
+    },
+    "450": {
+      "studio": "天启工作室",
+      "status": "matched"
+    },
+    "221": {
+      "studio": "天马工作室",
+      "status": "matched"
+    },
+    "84": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "354": {
+      "studio": "天马工作室",
+      "status": "matched"
+    },
+    "421": {
+      "studio": "天启工作室",
+      "status": "matched"
+    },
+    "24": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "686": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "688": {
+      "studio": "启航工作室",
+      "status": "matched"
+    },
+    "10": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "521": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "234": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "105": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "237": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "283": {
+      "studio": "斗雀工作室",
+      "status": "matched"
+    },
+    "19": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "108": {
+      "studio": "斗破苍穹工作室",
+      "status": "matched"
+    },
+    "339": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "230": {
+      "studio": "天马工作室",
+      "status": "matched"
+    },
+    "349": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "432": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "310": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "249": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "699": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "395": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "16": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "40": {
+      "studio": "天启工作室",
+      "status": "matched"
+    },
+    "560": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "482": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "353": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "411": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "31": {
+      "studio": "斗破苍穹工作室",
+      "status": "matched"
+    },
+    "215": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "425": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "44": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "438": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "585": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "20": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "429": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "33": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "38": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "673": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "79": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "239": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "27": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "332": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "103": {
+      "studio": "斗破苍穹工作室",
+      "status": "matched"
+    },
+    "39": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "218": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "258": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "335": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "67": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "222": {
+      "studio": "斗破苍穹工作室",
+      "status": "matched"
+    },
+    "231": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "547": {
+      "studio": "未匹配工作室",
+      "status": "unmatched"
+    },
+    "409": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "378": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "68": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "226": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "17": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "423": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "269": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "206": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "14": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "698": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "455": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "470": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "590": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "535": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "47": {
+      "studio": "斗破苍穹工作室",
+      "status": "matched"
+    },
+    "745": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "323": {
+      "studio": "原力工作室",
+      "status": "matched"
+    },
+    "85": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "80": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "572": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "401": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "392": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "57": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "254": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "346": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "273": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "563": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "266": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "728": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "30": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "73": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "72": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "286": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "109": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "63": {
+      "studio": "原力工作室",
+      "status": "matched"
+    },
+    "338": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "35": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "106": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "250": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "94": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "655": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "400": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "501": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "533": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "49": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "77": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "504": {
+      "studio": "开机工作室",
+      "status": "matched"
+    },
+    "114": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "337": {
+      "studio": "天马工作室",
+      "status": "matched"
+    },
+    "398": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "268": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "282": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "308": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "586": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "291": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "685": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "82": {
+      "studio": "小确幸工作室",
+      "status": "matched"
+    },
+    "264": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "1097": {
+      "studio": "天机工作室",
+      "status": "matched"
+    },
+    "527": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "11": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "204": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "90": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "355": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "587": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "45": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "232": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "365": {
+      "studio": "钱塘工作室",
+      "status": "matched"
+    },
+    "265": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "759": {
+      "studio": "徽州工作室",
+      "status": "matched"
+    },
+    "584": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "569": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "359": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "473": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "61": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "420": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "561": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "13": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "408": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "671": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "461": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "2007": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    },
+    "530": {
+      "studio": "未匹配工作室",
+      "status": "unmatched"
+    },
+    "217": {
+      "studio": "浩瀚工作室",
+      "status": "matched"
+    }
+  }
+}
