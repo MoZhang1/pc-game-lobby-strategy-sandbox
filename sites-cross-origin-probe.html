@@ -1,0 +1,9 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>GitHub → 私有Sites 跨域探针</title><main><h1>GitHub → 私有Sites 无费用检查</h1><p>必须从 https://mozhang1.github.io 执行；本机预览不算GitHub跨域测试。只调用既有无key探针，不读取Cookie或令牌、不调用模型。</p><button data-path="/api/health">跨域带凭据 GET 健康</button><button data-path="/api/auth-check">跨域带凭据 GET 身份</button><button data-path="/api/chat-test" data-post="true">JSON POST 预检与模拟端点</button><p>POST使用空JSON，仅用于触发预检；若抵达应用后返回参数错误，只说明负载尚需按源代码匹配，不代表模型失败。</p><pre id="output">尚未运行</pre></main><script>
+const base='https://pc-dashboard-connectivity-20261030.lucky-yew-0500.chatgpt.site';
+const allowedKeys=new Set(['ok','probe','mock','modelConnected','businessData','authenticated','reply','stored']);
+for(const button of document.querySelectorAll('button'))button.onclick=async()=>{
+ const output=document.getElementById('output');if(location.origin!=='https://mozhang1.github.io'){output.textContent='已阻止：当前不是已授权GitHub origin，本机结果不能代替跨域验收。';return;}
+ button.disabled=true;const post=button.dataset.post==='true';
+ try{const r=await fetch(base+button.dataset.path,{method:post?'POST':'GET',mode:'cors',credentials:'include',redirect:'error',cache:'no-store',...(post?{headers:{'Content-Type':'application/json'},body:'{}'}:{})});let body='非JSON，未展示响应内容';if(r.headers.get('content-type')?.includes('application/json')){const raw=await r.json();body=Object.fromEntries(Object.entries(raw).filter(([key])=>allowedKeys.has(key)));}output.textContent=JSON.stringify({origin:location.origin,path:button.dataset.path,method:post?'POST':'GET',status:r.status,body,modelRequest:false},null,2);}catch(e){output.textContent=JSON.stringify({path:button.dataset.path,errorType:e.name,message:'浏览器请求未获得可读响应；可能为CORS、认证重定向或网络，单此错误不能区分。没有自动重试。',modelRequest:false},null,2);}finally{button.disabled=false;}
+};
+</script></html>
