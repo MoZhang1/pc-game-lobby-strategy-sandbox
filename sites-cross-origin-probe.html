@@ -7,3 +7,48 @@ for(const button of document.querySelectorAll('button'))button.onclick=async()=>
  try{const r=await fetch(base+button.dataset.path,{method:post?'POST':'GET',mode:'cors',credentials:'include',redirect:'error',cache:'no-store',...(post?{headers:{'Content-Type':'application/json'},body:'{}'}:{})});let body='非JSON，未展示响应内容';if(r.headers.get('content-type')?.includes('application/json')){const raw=await r.json();body=Object.fromEntries(Object.entries(raw).filter(([key])=>allowedKeys.has(key)));}output.textContent=JSON.stringify({origin:location.origin,path:button.dataset.path,method:post?'POST':'GET',status:r.status,body,modelRequest:false},null,2);}catch(e){output.textContent=JSON.stringify({path:button.dataset.path,errorType:e.name,message:'浏览器请求未获得可读响应；可能为CORS、认证重定向或网络，单此错误不能区分。没有自动重试。',modelRequest:false},null,2);}finally{button.disabled=false;}
 };
 </script></html>
+
+<!-- POPUP_RELAY_BUNDLE --><script>(()=>{
+// Unified parent-approved protocol. Exactly one fixed mock request per popup.
+const POPUP_CHANNEL='dashboard-sites-probe-v1';
+const GITHUB_ORIGIN='https://mozhang1.github.io';
+const SITE_ORIGIN='https://pc-dashboard-connectivity-20261030.lucky-yew-0500.chatgpt.site';
+const hex=x=>typeof x==='string'&&/^[a-f0-9]{32}$/.test(x);
+const exact=(d,keys)=>{try{return d&&typeof d==='object'&&!Array.isArray(d)&&Object.keys(d).length===keys.length&&keys.every(k=>Object.hasOwn(d,k))&&JSON.stringify(d).length<=1024;}catch{return false;}};
+const random=()=>[...crypto.getRandomValues(new Uint8Array(16))].map(x=>x.toString(16).padStart(2,'0')).join('');
+const fail=code=>Object.assign(Error(code),{code});
+function createSitesPopupCaller({windowImpl=window,makeValue=random,setTimer=setTimeout,clearTimer=clearTimeout,onState=()=>{}}={}){
+ let popup=null,job=null,nonce=null,id=null,sent=false,lastPhase='idle';
+ const notify=(phase,code=null)=>{lastPhase=phase;onState({phase,code});};
+ function finish(error,result){if(!job)return;clearTimer(job.timer);const old=job;job=null;if(error){notify('failed',error);old.reject(fail(error));}else{notify('result',result.code);old.resolve(result);}}
+ function receive(event){
+  if(!job||event.source!==popup||event.origin!==SITE_ORIGIN||!event.data||event.data.channel!==POPUP_CHANNEL)return false;
+  const d=event.data;if(d.nonce!==nonce||!hex(d.nonce))return false;
+  if(d.type==='ready'){
+   if(!exact(d,['channel','type','nonce'])||sent)return false;
+   sent=true;clearTimer(job.timer);job.timer=setTimer(()=>finish('MOCK_RESULT_UNKNOWN'),15000);notify('waiting-mock');
+   popup.postMessage({channel:POPUP_CHANNEL,type:'request',nonce,id,action:'mock'},SITE_ORIGIN);return true;
+  }
+  if(d.type!=='result'||!sent||!exact(d,['channel','type','nonce','id','ok','code','modelConnected'])||d.id!==id||!hex(d.id)||typeof d.ok!=='boolean'||d.modelConnected!==false||!(d.ok?d.code==='MOCK_OK':['AUTH_REQUIRED','PROBE_FAILED'].includes(d.code)))return false;
+  finish(null,{ok:d.ok,code:d.code,modelConnected:false,requestId:d.id,mock:true});return true;
+ }
+ windowImpl.addEventListener('message',receive);
+ return{open(){
+  if(windowImpl.location.origin!==GITHUB_ORIGIN)return Promise.reject(fail('ORIGIN_DENIED'));
+  if(job)return job.promise;
+  nonce=makeValue();id=makeValue();sent=false;if(!hex(nonce)||!hex(id)||nonce===id)return Promise.reject(fail('RANDOM_VALUES_INVALID'));
+  let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});job={promise,resolve,reject,timer:setTimer(()=>finish('READY_TIMEOUT'),35000)};
+  popup=windowImpl.open(SITE_ORIGIN+'/popup-relay#nonce='+nonce,'_blank','popup,width=560,height=680');
+  if(!popup)finish('POPUP_BLOCKED');else notify('opening');return promise;
+ },diagnostics(){let handleClosed=null;try{handleClosed=popup?popup.closed:null;}catch{}return{handlePresent:!!popup,handleClosed,requestSent:sent,pending:!!job,phase:lastPhase};},dispose(){finish('USER_DISCONNECTED');windowImpl.removeEventListener('message',receive);}};
+}
+
+const section=document.createElement('section');section.innerHTML='<h2>Sites 同源弹窗中继（统一单次mock协议）</h2><p>新窗口只执行一次固定模拟请求。ready仅代表脚本已就绪，不能代表登录验证通过；只有MOCK_OK才表示固定模拟请求成功。无模型、密钥或业务数据。</p><button id="relay-open">打开私有Site弹窗并测试固定mock</button> <button id="relay-handle">查看窗口句柄诊断</button><p id="relay-state">尚未运行</p><pre id="relay-output">尚未运行</pre>';
+document.querySelector('main').append(section);
+const output=section.querySelector('#relay-output'),state=section.querySelector('#relay-state'),openButton=section.querySelector('#relay-open');
+const labels={opening:'窗口已打开，等待Site脚本ready；尚未证明身份。','waiting-mock':'Site脚本ready；已发送且仅发送一次固定mock，等待结果。',result:'收到经过来源/窗口/nonce/id校验的固定结果。',failed:'本次测试未完成，不自动重试。'};
+const caller=createSitesPopupCaller({onState:s=>{state.textContent=(labels[s.phase]||s.phase)+(s.code?' · '+s.code:'');}});
+openButton.onclick=async()=>{openButton.disabled=true;output.textContent='正在等待独立Site窗口；没有模型请求。';try{output.textContent=JSON.stringify(await caller.open(),null,2);}catch(e){output.textContent=JSON.stringify({code:e.code||'RESULT_UNKNOWN',message:'没有可靠结果，不自动重试；请核对窗口实际页面，不能单凭超时断言COOP或登录失败。',modelConnected:false},null,2);}finally{openButton.disabled=false;}};
+section.querySelector('#relay-handle').onclick=()=>{output.textContent=JSON.stringify({diagnostics:caller.diagnostics(),note:'closed=true也可能是用户关闭或浏览器隔离；此值不单独证明COOP根因。',modelConnected:false},null,2);};
+
+})();</script>
