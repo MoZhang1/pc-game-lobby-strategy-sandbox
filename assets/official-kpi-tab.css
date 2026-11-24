@@ -24,3 +24,15 @@
 .official-kpi .kpi-targets li strong{font-size:clamp(9px,2.1vw,11px);white-space:nowrap}
 .official-kpi .kpi-targets li span::before{content:"";width:9px;border-top:1.5px dashed currentColor;display:inline-block;vertical-align:.19em;margin-right:3px}
 @media(max-width:540px){.official-kpi .pageIntro{align-items:flex-start;flex-direction:column;gap:8px}.official-kpi .kpi-card{padding-inline:12px}}
+.official-kpi .kpi-grid{grid-template-columns:minmax(0,1fr);gap:16px}
+.official-kpi .kpi-filters{display:flex;align-items:center;margin:0 0 12px;gap:12px;flex-wrap:wrap}
+.official-kpi .kpi-filter-fields{display:flex;gap:10px;flex-wrap:wrap}
+.official-kpi .kpi-filter-fields label{display:grid;gap:4px;color:var(--kpi-muted);font-size:12px}
+.official-kpi .kpi-filter-fields select,.official-kpi .kpi-reset{font:inherit;font-size:13px;padding:8px 10px;background:#fff;color:#171717;border:1px solid var(--kpi-border);border-radius:6px;min-height:36px}
+.official-kpi .kpi-reset{cursor:pointer;align-self:flex-end}
+.official-kpi .kpi-reset:hover:not(:disabled){background:#f5f5f5}
+.official-kpi .kpi-reset:disabled{opacity:.46;cursor:default}
+.official-kpi .kpi-filters :focus-visible{outline:2px solid var(--kpi-accent);outline-offset:2px}
+.official-kpi .kpi-tooltip{left:clamp(4px,calc(var(--point) - 96px),calc(100% - 196px));width:192px}
+.official-kpi .kpi-targets{max-width:500px}
+@media(max-width:540px){.official-kpi .kpi-filters{padding:12px;gap:8px}.official-kpi .kpi-filters .filterCopy{flex-basis:100%}.official-kpi .kpi-filter-fields select{max-width:128px}.official-kpi .kpi-reset{padding-inline:6px}}
