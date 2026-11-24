@@ -144,6 +144,11 @@ export const monthlyHistory = {
       "value": 53.863004740886055,
       "through": "2026-05-31",
       "note": "按正式同口径复算"
+    },
+    "pcOld": {
+      "value": 29.15951364830921,
+      "through": "2026-05-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-06": {
@@ -163,6 +168,11 @@ export const monthlyHistory = {
     },
     "pcNew": {
       "value": 53.929336552521505,
+      "through": "2026-06-30",
+      "note": "按正式同口径复算"
+    },
+    "pcOld": {
+      "value": 29.63896878559157,
       "through": "2026-06-30",
       "note": "按正式同口径复算"
     }
@@ -186,6 +196,11 @@ export const monthlyHistory = {
       "value": 55.58402935965578,
       "through": "2026-07-31",
       "note": "按正式同口径复算"
+    },
+    "pcOld": {
+      "value": 31.903433352491586,
+      "through": "2026-07-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-08": {
@@ -205,6 +220,11 @@ export const monthlyHistory = {
     },
     "pcNew": {
       "value": 55.17512018051604,
+      "through": "2026-08-31",
+      "note": "按正式同口径复算"
+    },
+    "pcOld": {
+      "value": 30.438991078346625,
       "through": "2026-08-31",
       "note": "按正式同口径复算"
     }

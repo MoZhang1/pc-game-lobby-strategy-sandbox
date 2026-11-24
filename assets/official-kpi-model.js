@@ -7,11 +7,19 @@ export const metrics=[
  ['mobileOld','移动老客总登入率',[45,51,57,60],'加权','Q08 · 移动老客棋牌、捕鱼及联运进入量 ÷ 老客基数，分子跨游戏不去重。'],
  ['crash','PC 新大厅崩溃率',[1.5,1,.75,.5],'上限','Q03 · 正式匹配口径；先每天算崩溃率，再对日率取算术平均。'],
 ];
-export function curve(rows={}, mode='加权'){
+// Snapshot metadata is a calendar month, not the viewer's wall-clock month.
+export function daysInMonth(ym){
+ const found=typeof ym==='string'?/^(\d{4})-(0[1-9]|1[0-2])$/.exec(ym):null;
+ if(!found||Number(found[1])===0)return 0;
+ const year=Number(found[1]),month=Number(found[2]);
+ const leap=year%4===0&&(year%100!==0||year%400===0);
+ return [31,leap?29:28,31,30,31,30,31,31,30,31,30,31][month-1];
+}
+export function curve(rows={}, mode='加权', snapshotMonth){
  let n=0,d=0,r=0,count=0;
- return Array.from({length:30},(_,i)=>{
+ return Array.from({length:daysInMonth(snapshotMonth)},(_,i)=>{
    const day=i+1, x=rows[day];
-   if(!x || x[1]<=0) return {day,value:null};
+   if(!x || !Number.isFinite(x[0]) || x[0]<0 || !Number.isFinite(x[1]) || x[1]<=0) return {day,value:null};
    n+=x[0]; d+=x[1]; r+=x[0]/x[1]; count++;
    return {day,value:mode==='上限'?100*r/count:mode==='人数'?n/count:100*n/d};
  });

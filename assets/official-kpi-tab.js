@@ -1,15 +1,17 @@
 import {n as react,t as runtime} from './jsx-runtime-n5LQ9ujS.js';
-import {daily} from './official-kpi-data.js';
+import {dailySnapshots} from './official-kpi-data.js';
 import {monthlyHistory} from './official-kpi-history.js';
-import {metrics,curve,score,format,tiers} from './official-kpi-model.js';
+import {metrics,curve,score,format,tiers,daysInMonth} from './official-kpi-model.js';
 const {jsx:h,jsxs}=runtime();
 const {useState,useEffect,useRef}=react();
 const colors=['#9a481b','#167b70','#185eaa','#73549a'];
 const palette='#1059ad';
-const firstMonth='2025-12',currentMonth='2026-11';
+const firstMonth='2025-12';
+const snapshotMonths=Object.keys(dailySnapshots).filter(month=>daysInMonth(month)>0&&month>=firstMonth&&metrics.some(([key,,,mode])=>curve(dailySnapshots[month]?.[key],mode,month).some(row=>row.value!=null)));
+const validSnapshot=month=>snapshotMonths.includes(month);
 const monthsBetween=(first,last)=>{
  let year=Number(first.slice(0,4)),month=Number(first.slice(5)),out=[];
- for(let i=0;i<240;i++){
+ while(year<=9999){
   const yy=year+'-'+String(month).padStart(2,'0');
   if(yy>last)break;
   out.push(yy);
@@ -17,7 +19,7 @@ const monthsBetween=(first,last)=>{
  }
  return out;
 };
-const lastMonth=Object.keys(monthlyHistory).filter(k=>/^\d{4}-(0[1-9]|1[0-2])$/.test(k)).reduce((max,k)=>k>max?k:max,currentMonth);
+const lastMonth=[...Object.keys(monthlyHistory).filter(k=>daysInMonth(k)>0),...snapshotMonths].reduce((max,k)=>k>max?k:max,firstMonth);
 const monthOptions=monthsBetween(firstMonth,lastMonth);
 const monthLabel=m=>m.slice(0,4)+' 年 '+Number(m.slice(5))+' 月';
 const shortMonth=m=>m.slice(2,4)+'/'+m.slice(5);
@@ -25,15 +27,14 @@ const niceDate=d=>d.slice(0,4)+' 年 '+Number(d.slice(5,7))+' 月 '+Number(d.sli
 const latestPoint=points=>points.filter(p=>p.value!=null).at(-1);
 const tierLabel=tier=>tier==null?'暂无已核实绩 · 不判档':tier===0?'未达 75 分':tier+' 分档';
 const toDate=(month,day)=>month+'-'+String(day).padStart(2,'0');
-const daysInMonth=key=>new Date(Date.UTC(Number(key.slice(0,4)),Number(key.slice(5)),0)).getUTCDate();
 const verifiedMonthly=(month,key,mode)=>{
- if(month===currentMonth){const p=latestPoint(curve(daily[key],mode));return p?{value:p.value,through:toDate(month,p.day),partial:p.day<daysInMonth(month)}:null;}
+ if(validSnapshot(month)){const p=latestPoint(curve(dailySnapshots[month][key],mode,month));if(p)return {value:p.value,through:toDate(month,p.day),partial:p.day<daysInMonth(month)};}
  const rec=monthlyHistory[month]?.[key];
  if(!rec||typeof rec.value!=='number'||!Number.isFinite(rec.value)||rec.value<0||typeof rec.through!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(rec.through)||!rec.through.startsWith(month+'-')||Number(rec.through.slice(8))<1||Number(rec.through.slice(8))>daysInMonth(month))return null;
  return {value:rec.value,through:rec.through,partial:rec.partial===true||Number(rec.through.slice(8))<daysInMonth(month),note:typeof rec.note==='string'?rec.note:null};
 };
 const monthlySeries=(keys,key,mode)=>keys.map(month=>({month,label:monthLabel(month),short:shortMonth(month),value:null,...verifiedMonthly(month,key,mode)}));
-const dailySeries=(key,mode)=>curve(daily[key],mode).map(row=>({...row,month:currentMonth,through:toDate(currentMonth,row.day),label:niceDate(toDate(currentMonth,row.day)),short:row.day+'日'}));
+const dailySeries=(month,key,mode)=>curve(dailySnapshots[month]?.[key],mode,month).map(row=>({...row,month,through:toDate(month,row.day),label:niceDate(toDate(month,row.day)),short:row.day+'日'}));
 const benchmarkTier=tier=>tier==null?tierLabel(tier):'按当前档位线：'+tierLabel(tier);
 function Plot({points,limits,mode,metricKey,label,isDaily}){
  const [idx,setIdx]=useState(null),[pinned,setPinned]=useState(false),[width,setWidth]=useState(720);
@@ -56,7 +57,7 @@ function Plot({points,limits,mode,metricKey,label,isDaily}){
  const dash=['6 5','4 4','8 4','2 4'];
  const active=idx==null?null:points[idx];
  const tier=active?.value!=null?score(active.value,limits,mode==='上限'):null;
- const labels=isDaily?[0,4,9,14,19,24,29]:points.map((_,i)=>i).filter(i=>chartW>=610||points.length<=6||(i%2===0&&i<points.length-2)||i===points.length-1);
+ const labels=isDaily?[0,4,9,14,19,24,points.length-1]:points.map((_,i)=>i).filter(i=>chartW>=610||points.length<=6||(i%2===0&&i<points.length-2)||i===points.length-1);
  const fromPointer=e=>{
    const box=e.currentTarget.getBoundingClientRect();
    const ux=(e.clientX-box.left)/box.width*chartW;
@@ -96,7 +97,7 @@ function Plot({points,limits,mode,metricKey,label,isDaily}){
 }
 function Card({metric,months,isDaily}){
  const [key,label,limits,mode,method]=metric;
- const points=isDaily?dailySeries(key,mode):monthlySeries(months,key,mode),latest=latestPoint(points);
+ const points=isDaily?dailySeries(months[0],key,mode):monthlySeries(months,key,mode),latest=latestPoint(points);
  const tier=score(latest?.value,limits,mode==='上限');
  return jsxs('article',{className:'kpi-card','data-kpi-metric':key,children:[
    jsxs('div',{className:'kpi-card-heading',children:[h('h3',{children:label})]}),
@@ -113,7 +114,7 @@ function Card({metric,months,isDaily}){
 export function OfficialKpiTab(){
  const [start,setStart]=useState(firstMonth),[end,setEnd]=useState(lastMonth);
  const selected=monthsBetween(start,end);
- const isDaily=start===end&&start===currentMonth;
+ const isDaily=start===end&&validSnapshot(start);
  const picker=(id,value,change)=>h('select',{id,value,onChange:e=>change(e.target.value),children:monthOptions.map(m=>h('option',{value:m,children:monthLabel(m)},m))});
  return jsxs('section',{className:'official-kpi','aria-labelledby':'official-kpi-title',children:[
    h('link',{rel:'stylesheet',href:new URL('./official-kpi-tab.css',import.meta.url).href}),
