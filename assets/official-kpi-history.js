@@ -46,6 +46,16 @@ export const monthlyHistory = {
     "active": {
       "value": 532988.75,
       "through": "2026-02-28"
+    },
+    "mobileNew": {
+      "value": 53.90969398673229,
+      "through": "2026-02-28",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 52.66244968372628,
+      "through": "2026-02-28",
+      "note": "按正式同口径复算"
     }
   },
   "2026-03": {
@@ -57,6 +67,16 @@ export const monthlyHistory = {
     "active": {
       "value": 581344.0322580645,
       "through": "2026-03-31"
+    },
+    "mobileNew": {
+      "value": 53.14988792980113,
+      "through": "2026-03-31",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 52.95891864719189,
+      "through": "2026-03-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-04": {
@@ -68,6 +88,16 @@ export const monthlyHistory = {
     "active": {
       "value": 577131.1,
       "through": "2026-04-30"
+    },
+    "mobileNew": {
+      "value": 50.6636868481647,
+      "through": "2026-04-30",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 54.30493130598323,
+      "through": "2026-04-30",
+      "note": "按正式同口径复算"
     }
   },
   "2026-05": {
@@ -79,6 +109,16 @@ export const monthlyHistory = {
     "active": {
       "value": 560732.9032258064,
       "through": "2026-05-31"
+    },
+    "mobileNew": {
+      "value": 47.37997450786008,
+      "through": "2026-05-31",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 53.863004740886055,
+      "through": "2026-05-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-06": {
@@ -90,6 +130,16 @@ export const monthlyHistory = {
     "active": {
       "value": 565010.3666666667,
       "through": "2026-06-30"
+    },
+    "mobileNew": {
+      "value": 44.814838421824206,
+      "through": "2026-06-30",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 53.929336552521505,
+      "through": "2026-06-30",
+      "note": "按正式同口径复算"
     }
   },
   "2026-07": {
@@ -101,6 +151,16 @@ export const monthlyHistory = {
     "active": {
       "value": 562217.5161290322,
       "through": "2026-07-31"
+    },
+    "mobileNew": {
+      "value": 43.20197044334975,
+      "through": "2026-07-31",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 55.58402935965578,
+      "through": "2026-07-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-08": {
@@ -112,6 +172,16 @@ export const monthlyHistory = {
     "active": {
       "value": 554570.6129032258,
       "through": "2026-08-31"
+    },
+    "mobileNew": {
+      "value": 44.4576735325634,
+      "through": "2026-08-31",
+      "note": "按正式同口径复算"
+    },
+    "pcNew": {
+      "value": 55.17512018051604,
+      "through": "2026-08-31",
+      "note": "按正式同口径复算"
     }
   },
   "2026-09": {
